@@ -1,16 +1,16 @@
-all: build lint # test
+all: build lint test
 .PHONY: all
 
 build: backup
 .PHONY: build
 
 lint: backup
-	shellcheck ./backup src/*.sh # tests/*.sh tests/*.bats
+	shellcheck ./backup src/*.sh tests/*.sh tests/*.bats
 .PHONY: lint
 
-# test: backup
-# 	bats tests
-# .PHONY: test
+test: backup
+	bats ./tests
+.PHONY: test
 
 install: backup
 	cp backup ~/.local/bin
