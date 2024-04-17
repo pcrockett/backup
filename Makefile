@@ -8,7 +8,7 @@ lint: backup
 	shellcheck ./backup src/*.sh tests/*.sh tests/*.bats
 .PHONY: lint
 
-test: backup
+test: backup compose_up
 	bats ./tests
 .PHONY: test
 

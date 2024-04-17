@@ -5,8 +5,9 @@ THIS_SCRIPT="$(readlink -f "${0}")"
 
 init() {
     TESTS_DIR="$(dirname "${THIS_SCRIPT}")"
-    COMPOSE_FILE="${TESTS_DIR}/docker-compose.yml"
+    COMPOSE_FILE="${BACKUP_COMPOSE_FILE:-${TESTS_DIR}/docker-compose.yml}"
     MINIO_INSTANCE_NAME="${MINIO_INSTANCE_NAME:-testinstance}"
+    MINIO_INSTANCE_URL="${MINIO_INSTANCE_URL:-http://localhost:9000}"
     MINIO_ROOT_USER="${MINIO_ROOT_USER:-testuser}"
     MINIO_ROOT_PASSWORD="${MINIO_ROOT_PASSWORD:-testpassword}"
     MINIO_BUCKET_NAME="${MINIO_BUCKET_NAME:-testbucket}"
@@ -25,7 +26,7 @@ setup_alias() {
         return 0
     else
         minio_cmd mc alias set \
-            "${MINIO_INSTANCE_NAME}" http://localhost:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}" \
+            "${MINIO_INSTANCE_NAME}" "${MINIO_INSTANCE_URL}" "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}" \
             > /dev/null
     fi
 }

@@ -2,13 +2,23 @@
 
 setup() {
     set -Eeuo pipefail
+    local repo_dir
+    repo_dir="$(readlink -f "${PWD}")"
+    export BACKUP_COMPOSE_FILE="${repo_dir}/tests/docker-compose.yml"
     TEST_CWD="$(mktemp --directory --tmpdir=/tmp bats-test.XXXXXX)"
     TEST_HOME="$(mktemp --directory --tmpdir=/tmp bats-home.XXXXXX)"
-    mkdir -p "${TEST_HOME}/.local/bin"
+    TEST_BIN="${TEST_HOME}/.local/bin"
+    mkdir -p "${TEST_BIN}"
+    cp tests/init-test-bucket.sh "${TEST_BIN}"
     cp .tool-versions "${TEST_CWD}"
     cd "${TEST_CWD}"
-    PATH="${TEST_HOME}/.local/bin:${PATH}"
+    PATH="${TEST_BIN}:${PATH}"
     export HOME="${TEST_HOME}"
+    export MINIO_INSTANCE_URL="${MINIO_INSTANCE_URL:-http://localhost:9000}"
+    export MINIO_ROOT_USER="${MINIO_ROOT_USER:-testuser}"
+    export MINIO_ROOT_PASSWORD="${MINIO_ROOT_PASSWORD:-testpassword}"
+    export MINIO_BUCKET_NAME="${MINIO_BUCKET_NAME:-testbucket}"
+    init-test-bucket.sh
 }
 
 teardown() {
