@@ -9,15 +9,27 @@ setup() {
     TEST_HOME="$(mktemp --directory --tmpdir=/tmp bats-home.XXXXXX)"
     TEST_BIN="${TEST_HOME}/.local/bin"
     mkdir -p "${TEST_BIN}"
+    cp backup "${TEST_BIN}"
     cp tests/init-test-bucket.sh "${TEST_BIN}"
     cp .tool-versions "${TEST_CWD}"
+
+    export MINIO_INSTANCE_URL="${MINIO_INSTANCE_URL:-http://localhost:9000}"
+    export MINIO_TEST_ACCESS_KEY="${MINIO_TEST_ACCESS_KEY:-testaccesskey}"
+    export MINIO_TEST_SECRET_KEY="${MINIO_TEST_SECRET_KEY:-testsecretkey}"
+    export MINIO_BUCKET_NAME="${MINIO_BUCKET_NAME:-testbucket}"
+
+    TEST_CONFIG="${TEST_HOME}/.config/backup"
+    mkdir --parent "${TEST_CONFIG}"
+    echo "
+export AWS_ACCESS_KEY_ID=\"${MINIO_TEST_ACCESS_KEY}\"
+export AWS_SECRET_ACCESS_KEY=\"${MINIO_TEST_SECRET_KEY}\"
+export RESTIC_REPOSITORY=\"s3:${MINIO_INSTANCE_URL}/${MINIO_BUCKET_NAME}\"
+export RESTIC_E2EE_PASSWORD=\"testpassword\"
+" > "${TEST_CONFIG}/config.sh"
+
     cd "${TEST_CWD}"
     PATH="${TEST_BIN}:${PATH}"
     export HOME="${TEST_HOME}"
-    export MINIO_INSTANCE_URL="${MINIO_INSTANCE_URL:-http://localhost:9000}"
-    export MINIO_ROOT_USER="${MINIO_ROOT_USER:-testuser}"
-    export MINIO_ROOT_PASSWORD="${MINIO_ROOT_PASSWORD:-testpassword}"
-    export MINIO_BUCKET_NAME="${MINIO_BUCKET_NAME:-testbucket}"
     init-test-bucket.sh
 }
 

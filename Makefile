@@ -9,7 +9,7 @@ lint: backup
 .PHONY: lint
 
 test: backup compose_up
-	bats ./tests
+	bats --print-output-on-failure ./tests
 .PHONY: test
 
 install: backup

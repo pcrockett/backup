@@ -308,14 +308,33 @@ not_implemented() {
     panic "Not implemented yet."
 }
 
+# src/lib/read_config.sh
+# shellcheck shell=bash
+
+read_config() {
+    local config_file="${XDG_CONFIG_HOME:-${HOME}/.config}/backup/config.sh"
+    # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
+    source "${config_file}"
+}
+
 # :command.command_functions
 # :command.function
 backup_init_command() {
   # src/init_command.sh
   # shellcheck shell=bash
 
-  inspect_args
-  not_implemented
+  read_config
+
+  RESTIC_PASSWORD_FILE="$(mktemp)"
+  cleanup() {
+      rm -f "${RESTIC_PASSWORD_FILE}"
+  }
+  trap 'cleanup' SIGINT SIGTERM EXIT
+
+  echo "${RESTIC_E2EE_PASSWORD}" > "${RESTIC_PASSWORD_FILE}"
+  export RESTIC_PASSWORD_FILE
+
+  restic init
 
 }
 
