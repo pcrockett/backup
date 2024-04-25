@@ -9,3 +9,7 @@ panic() {
 not_implemented() {
     panic "Not implemented yet."
 }
+
+log_info() {
+    echo "${*}"
+}
