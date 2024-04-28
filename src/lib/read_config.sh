@@ -25,6 +25,7 @@ read_config() {
 }
 
 write_config_template() {
+    # shellcheck disable=SC2016  # any dollar signs in the following should be literal
     echo '# shellcheck shell=bash
 #
 # recommended: all this information should be stored in a password manager. this makes your life
@@ -34,5 +35,35 @@ export AWS_ACCESS_KEY_ID="TODO"
 export AWS_SECRET_ACCESS_KEY="TODO"
 export RESTIC_REPOSITORY="s3:https://example.com/bucket-name"
 export RESTIC_E2EE_PASSWORD="TODO"
+
+BACKUP_PATHS=(
+    # TODO
+)
+
+EXCLUDE=(
+    "*.lo"
+    "*.o"
+    "*.pyc"
+    "*~"
+    ".cache/"
+    ".config/"
+    ".git/"
+    ".gradle/"
+    ".idea/"
+    ".jdks/"
+    ".local/"
+    ".npm/"
+    ".nvm/"
+    ".opam/"
+    ".tmp/"
+    ".var/"
+    ".vscode-oss/extensions/"
+    "\$RECYCLE.BIN"
+    "Downloads/"
+    "gvfs-metadata/"
+    "lost+found/"
+    "node_modules/"
+    "venv/"
+)
 ' > "${1}"
 }

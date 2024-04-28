@@ -25,6 +25,12 @@ export AWS_ACCESS_KEY_ID=\"${MINIO_TEST_ACCESS_KEY}\"
 export AWS_SECRET_ACCESS_KEY=\"${MINIO_TEST_SECRET_KEY}\"
 export RESTIC_REPOSITORY=\"s3:${MINIO_INSTANCE_URL}/${MINIO_BUCKET_NAME}\"
 export RESTIC_E2EE_PASSWORD=\"testpassword\"
+
+BACKUP_PATHS=(
+    \"\${HOME}\"
+)
+
+EXCLUDE=()
 " > "${TEST_CONFIG}/config.sh"
 
     cd "${TEST_CWD}"
