@@ -295,6 +295,60 @@ inspect_args() {
 }
 
 # :command.user_lib
+# src/lib/each.sh
+# shellcheck shell=bash
+
+each() {
+    # iterate through stdin lines, and execute a command for each line.
+    # the stdin line will be passed to the command as the last parameter.
+    #
+    # example usage:
+    #
+    #     printf 'foo\nbar' | each echo "you said: "
+    #
+    # outputs:
+    #
+    #     you said: foo
+    #     you said: bar
+    #
+    while IFS= read -r line || [ -n "${line}" ]
+    do
+        "${@}" "${line}"
+    done < <(cat)
+}
+
+# src/lib/exit_hook.sh
+# shellcheck shell=bash
+
+exit_hook() {
+    # run a command before the script exits
+
+    EXIT_HOOKS+=(
+        "$(lines "${@}" | each printf "%q ")"
+    )
+}
+
+# src/lib/lines.sh
+# shellcheck shell=bash
+
+lines() {
+    # iterate through args, and output each one on a new line.
+    #
+    # example usage:
+    #
+    #     lines a b c
+    #
+    # outputs:
+    #
+    #     a
+    #     b
+    #     c
+    #
+    for i in "${@}"; do
+        echo "${i}"
+    done
+}
+
 # src/lib/logging.sh
 # shellcheck shell=bash
 
@@ -383,6 +437,15 @@ EXCLUDE=(
 ' > "${1}"
 }
 
+# src/lib/temp_file.sh
+# shellcheck shell=bash
+
+temp_file() {
+    # create a temp file in ${BACKUP_TEMP_DIR} and echo its file path to stdout
+    # ${BACKUP_TEMP_DIR} will be deleted in [ref:before-hook]
+    mktemp --tmpdir="${BACKUP_TEMP_DIR}"
+}
+
 # :command.command_functions
 # :command.function
 backup_init_command() {
@@ -391,16 +454,10 @@ backup_init_command() {
 
   read_config
 
-  RESTIC_PASSWORD_FILE="$(mktemp)"
-  cleanup() {
-      rm -f "${RESTIC_PASSWORD_FILE}"
-  }
-  trap 'cleanup' SIGINT SIGTERM EXIT
+  password_file="$(temp_file)"
 
-  echo "${RESTIC_E2EE_PASSWORD}" > "${RESTIC_PASSWORD_FILE}"
-  export RESTIC_PASSWORD_FILE
-
-  restic init
+  echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
+  RESTIC_PASSWORD_FILE="${password_file}" restic init
 
 }
 
@@ -411,25 +468,16 @@ backup_run_command() {
 
   read_config
 
-  RESTIC_EXCLUDE_FILE="$(mktemp)"
-  RESTIC_PASSWORD_FILE="$(mktemp)"
-  cleanup() {
-      rm -f "${RESTIC_EXCLUDE_FILE}" "${RESTIC_PASSWORD_FILE}"
-  }
-  trap 'cleanup' SIGINT SIGTERM EXIT
+  exclude_file="$(temp_file)"
+  password_file="$(temp_file)"
 
-  for pattern in "${EXCLUDE[@]}"
-  do
-      echo "${pattern}"
-  done > "${RESTIC_EXCLUDE_FILE}"
+  lines "${EXCLUDE[@]}" > "${exclude_file}"
+  echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
 
-  echo "${RESTIC_E2EE_PASSWORD}" > "${RESTIC_PASSWORD_FILE}"
-  export RESTIC_PASSWORD_FILE
-
-  restic --verbose backup \
+  RESTIC_PASSWORD_FILE="${password_file}" restic --verbose backup \
       --exclude-caches \
       --exclude-if-present ".nobackup" \
-      --exclude-file "${RESTIC_EXCLUDE_FILE}" \
+      --exclude-file "${exclude_file}" \
       "${BACKUP_PATHS[@]}"
 
 }
@@ -781,6 +829,24 @@ backup_mount_parse_requirements() {
 
 }
 
+# :command.user_hooks
+before_hook() {
+  # src/before.sh
+  # shellcheck shell=bash
+
+  BACKUP_TEMP_DIR="$(mktemp --directory backup.XXXXXX)"
+  EXIT_HOOKS=()
+
+  on_exit() {
+      rm -rf "${BACKUP_TEMP_DIR}"
+      for hook in "${EXIT_HOOKS[@]}"; do
+          eval "${hook}"
+      done
+  }
+  trap 'on_exit' SIGINT SIGTERM EXIT
+
+}
+
 # :command.initialize
 initialize() {
   version="0.1.0"
@@ -798,6 +864,7 @@ run() {
   declare -a input=()
   normalize_input "$@"
   parse_requirements "${input[@]}"
+  before_hook
 
   case "$action" in
     "init") backup_init_command ;;

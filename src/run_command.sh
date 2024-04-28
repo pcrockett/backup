@@ -2,23 +2,14 @@
 
 read_config
 
-RESTIC_EXCLUDE_FILE="$(mktemp)"
-RESTIC_PASSWORD_FILE="$(mktemp)"
-cleanup() {
-    rm -f "${RESTIC_EXCLUDE_FILE}" "${RESTIC_PASSWORD_FILE}"
-}
-trap 'cleanup' SIGINT SIGTERM EXIT
+exclude_file="$(temp_file)"
+password_file="$(temp_file)"
 
-for pattern in "${EXCLUDE[@]}"
-do
-    echo "${pattern}"
-done > "${RESTIC_EXCLUDE_FILE}"
+lines "${EXCLUDE[@]}" > "${exclude_file}"
+echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
 
-echo "${RESTIC_E2EE_PASSWORD}" > "${RESTIC_PASSWORD_FILE}"
-export RESTIC_PASSWORD_FILE
-
-restic --verbose backup \
+RESTIC_PASSWORD_FILE="${password_file}" restic --verbose backup \
     --exclude-caches \
     --exclude-if-present ".nobackup" \
-    --exclude-file "${RESTIC_EXCLUDE_FILE}" \
+    --exclude-file "${exclude_file}" \
     "${BACKUP_PATHS[@]}"
