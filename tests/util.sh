@@ -20,18 +20,18 @@ setup() {
 
     TEST_CONFIG="${TEST_HOME}/.config/backup"
     mkdir --parent "${TEST_CONFIG}"
-    echo "
-export AWS_ACCESS_KEY_ID=\"${MINIO_TEST_ACCESS_KEY}\"
-export AWS_SECRET_ACCESS_KEY=\"${MINIO_TEST_SECRET_KEY}\"
-export RESTIC_REPOSITORY=\"s3:${MINIO_INSTANCE_URL}/${MINIO_BUCKET_NAME}\"
-export RESTIC_E2EE_PASSWORD=\"testpassword\"
+    cat > "${TEST_CONFIG}/config.sh" <<EOF
+export AWS_ACCESS_KEY_ID="${MINIO_TEST_ACCESS_KEY}"
+export AWS_SECRET_ACCESS_KEY="${MINIO_TEST_SECRET_KEY}"
+export RESTIC_REPOSITORY="s3:${MINIO_INSTANCE_URL}/${MINIO_BUCKET_NAME}"
+export RESTIC_E2EE_PASSWORD="testpassword"
 
 BACKUP_PATHS=(
-    \"\${HOME}\"
+    "\${HOME}"
 )
 
 EXCLUDE=()
-" > "${TEST_CONFIG}/config.sh"
+EOF
 
     cd "${TEST_CWD}"
     PATH="${TEST_BIN}:${PATH}"

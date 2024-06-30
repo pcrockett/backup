@@ -17,7 +17,7 @@ are:
 * Your S3 credentials and bucket URL
 * What USB drive partition you're going to backup to
 * The end-to-end encryption key
-* What directories you want to backup
+* _Optional:_ What directories you want to backup
 * _Optional:_ What files and directories you want to ignore
 
 The script assists you in configuring all of these things.
