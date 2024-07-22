@@ -24,7 +24,7 @@ compose_down: tests/docker-compose.yml
 	docker compose --file tests/docker-compose.yml down
 .PHONY: compose_down
 
-backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh
+backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
 
 src/bashly.yml: src/bashly.cue
