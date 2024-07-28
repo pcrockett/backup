@@ -7,6 +7,7 @@ read_config() {
     if [ -f "${config_file}" ]; then
         # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
         source "${config_file}"
+        generate_password_file
         return
     fi
 
@@ -25,6 +26,7 @@ read_config() {
     "${EDITOR}" "${config_file}"
     # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
     source "${config_file}"
+    generate_password_file
 }
 
 write_config_template() {
@@ -70,4 +72,10 @@ EXCLUDE=(
     "venv/"
 )
 EOF
+}
+
+generate_password_file() {
+    password_file="$(temp_file)"
+    echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
+    export RESTIC_PASSWORD_FILE="${password_file}"
 }

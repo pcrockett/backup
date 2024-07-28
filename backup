@@ -325,6 +325,7 @@ read_config() {
     if [ -f "${config_file}" ]; then
         # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
         source "${config_file}"
+        generate_password_file
         return
     fi
 
@@ -343,6 +344,7 @@ read_config() {
     "${EDITOR}" "${config_file}"
     # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
     source "${config_file}"
+    generate_password_file
 }
 
 write_config_template() {
@@ -390,6 +392,12 @@ EXCLUDE=(
 EOF
 }
 
+generate_password_file() {
+    password_file="$(temp_file)"
+    echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
+    export RESTIC_PASSWORD_FILE="${password_file}"
+}
+
 # src/lib/temp_file.sh
 # shellcheck shell=bash
 
@@ -406,11 +414,7 @@ backup_init_command() {
   # shellcheck shell=bash
 
   read_config
-
-  password_file="$(temp_file)"
-
-  echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
-  RESTIC_PASSWORD_FILE="${password_file}" restic init
+  restic init
 
 }
 
@@ -422,12 +426,9 @@ backup_run_command() {
   read_config
 
   exclude_file="$(temp_file)"
-  password_file="$(temp_file)"
-
   lines "${EXCLUDE[@]}" > "${exclude_file}"
-  echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
 
-  RESTIC_PASSWORD_FILE="${password_file}" restic --verbose backup \
+  restic --verbose backup \
       --exclude-caches \
       --exclude-if-present ".nobackup" \
       --exclude-file "${exclude_file}" \
@@ -441,12 +442,7 @@ backup_check_command() {
   # shellcheck shell=bash
 
   read_config
-
-  password_file="$(temp_file)"
-  echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
-
-  RESTIC_PASSWORD_FILE="${password_file}" \
-      restic --verbose check --read-data-subset 100M
+  restic --verbose check --read-data-subset 100M
 
 }
 
