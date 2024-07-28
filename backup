@@ -277,17 +277,6 @@ each() {
     done < <(cat)
 }
 
-# src/lib/exit_hook.sh
-# shellcheck shell=bash
-
-exit_hook() {
-    # run a command before the script exits
-
-    EXIT_HOOKS+=(
-        "$(lines "${@}" | each printf "%q ")"
-    )
-}
-
 # src/lib/lines.sh
 # shellcheck shell=bash
 
@@ -357,7 +346,6 @@ read_config() {
 }
 
 write_config_template() {
-    # shellcheck disable=SC2016  # any dollar signs in the following should be literal
     cat > "${1}" <<EOF
 # shellcheck shell=bash
 #
@@ -802,13 +790,9 @@ before_hook() {
   # shellcheck shell=bash
 
   BACKUP_TEMP_DIR="$(mktemp --directory backup.XXXXXX)"
-  EXIT_HOOKS=()
 
   on_exit() {
       rm -rf "${BACKUP_TEMP_DIR}"
-      for hook in "${EXIT_HOOKS[@]}"; do
-          eval "${hook}"
-      done
   }
   trap 'on_exit' SIGINT SIGTERM EXIT
 

@@ -28,7 +28,6 @@ read_config() {
 }
 
 write_config_template() {
-    # shellcheck disable=SC2016  # any dollar signs in the following should be literal
     cat > "${1}" <<EOF
 # shellcheck shell=bash
 #

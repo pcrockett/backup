@@ -13,5 +13,5 @@ source tests/util.sh
 @test 'run - bucket not initialized - fails' {
     capture_output backup run --dest s3
     assert_stderr 'Is there a repository at the following location\?'
-    assert_exit_code 1
+    assert_exit_code 10
 }
