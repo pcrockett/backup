@@ -509,10 +509,10 @@ backup_config_command() {
       write_config_template "${config_file}"
   fi
 
-  if [ "${args[--edit]:-}" == "" ]; then
+  display_config() {
       if [ "${args[--no-pager]:-}" != "" ]; then
           cat "${config_file}"
-          exit
+          return
       fi
 
       if command -v bat &> /dev/null; then
@@ -522,12 +522,20 @@ backup_config_command() {
       else
           cat "${config_file}"
       fi
-  else
+  }
+
+  edit_config() {
       if [ "${EDITOR:-}" == "" ]; then
           panic "\$EDITOR has not been set!"
       else
           "${EDITOR}" "${config_file}"
       fi
+  }
+
+  if [ "${args[--edit]:-}" == "" ]; then
+      display_config
+  else
+      edit_config
   fi
 
 }

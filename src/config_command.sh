@@ -7,10 +7,10 @@ if [ ! -f "${config_file}" ]; then
     write_config_template "${config_file}"
 fi
 
-if [ "${args[--edit]:-}" == "" ]; then
+display_config() {
     if [ "${args[--no-pager]:-}" != "" ]; then
         cat "${config_file}"
-        exit
+        return
     fi
 
     if command -v bat &> /dev/null; then
@@ -20,11 +20,18 @@ if [ "${args[--edit]:-}" == "" ]; then
     else
         cat "${config_file}"
     fi
-else
+}
+
+edit_config() {
     if [ "${EDITOR:-}" == "" ]; then
         panic "\$EDITOR has not been set!"
     else
         "${EDITOR}" "${config_file}"
     fi
-fi
+}
 
+if [ "${args[--edit]:-}" == "" ]; then
+    display_config
+else
+    edit_config
+fi
