@@ -1,8 +1,16 @@
 # shellcheck shell=bash
 
+config_dir() {
+    echo "${XDG_CONFIG_HOME:-${HOME}/.config}/backup"
+}
+
+config_path() {
+    echo "$(config_dir)/config.sh"
+}
+
 read_config() {
-    local config_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/backup"
-    local config_file="${config_dir}/config.sh"
+    local config_file
+    config_file="$(config_path)"
 
     if [ -f "${config_file}" ]; then
         # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
@@ -11,7 +19,7 @@ read_config() {
         return
     fi
 
-    mkdir --parent "${config_dir}"
+    mkdir --parent "$(config_dir)"
     write_config_template "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then

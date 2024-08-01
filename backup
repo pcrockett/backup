@@ -26,10 +26,11 @@ backup_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Initialize a new repository\n" "init "
-  printf "  %s   Backup data to one or both repositories\n" "run  "
-  printf "  %s   Check your backup repository for errors\n" "check"
-  printf "  %s   Mount your backup repository\n" "mount"
+  printf "  %s   Initialize a new repository\n" "init  "
+  printf "  %s   Backup data to one or both repositories\n" "run   "
+  printf "  %s   Check your backup repository for errors\n" "check "
+  printf "  %s   Mount your backup repository\n" "mount "
+  printf "  %s   View or edit your backup config\n" "config"
   echo
 
   # :command.long_usage
@@ -182,6 +183,38 @@ backup_mount_usage() {
   fi
 }
 
+# :command.usage
+backup_config_usage() {
+  printf "backup config - View or edit your backup config\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  backup config [OPTIONS]\n"
+  printf "  backup config --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--edit, -e"
+    printf "    Open your config in \$EDITOR\n"
+    echo
+
+    # :flag.usage
+    printf "  %s\n" "--no-pager, -n"
+    printf "    Don't use \`bat\` or \`less\`\n"
+    echo
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+  fi
+}
+
 # :command.normalize_input
 # :command.normalize_input_function
 normalize_input() {
@@ -255,72 +288,20 @@ inspect_args() {
 }
 
 # :command.user_lib
-# src/lib/each.sh
+# src/lib/config.sh
 # shellcheck shell=bash
 
-each() {
-    # iterate through stdin lines, and execute a command for each line.
-    # the stdin line will be passed to the command as the last parameter.
-    #
-    # example usage:
-    #
-    #     printf 'foo\nbar' | each echo "you said: "
-    #
-    # outputs:
-    #
-    #     you said: foo
-    #     you said: bar
-    #
-    while IFS= read -r line || [ -n "${line}" ]
-    do
-        "${@}" "${line}"
-    done < <(cat)
+config_dir() {
+    echo "${XDG_CONFIG_HOME:-${HOME}/.config}/backup"
 }
 
-# src/lib/lines.sh
-# shellcheck shell=bash
-
-lines() {
-    # iterate through args, and output each one on a new line.
-    #
-    # example usage:
-    #
-    #     lines a b c
-    #
-    # outputs:
-    #
-    #     a
-    #     b
-    #     c
-    #
-    for i in "${@}"; do
-        echo "${i}"
-    done
+config_path() {
+    echo "$(config_dir)/config.sh"
 }
-
-# src/lib/logging.sh
-# shellcheck shell=bash
-
-panic() {
-    # for when you really shouldn't keep calm and carry on
-    echo "FATAL: ${*}" >&2
-    exit 1
-}
-
-not_implemented() {
-    panic "Not implemented yet."
-}
-
-log_info() {
-    echo "${*}"
-}
-
-# src/lib/read_config.sh
-# shellcheck shell=bash
 
 read_config() {
-    local config_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/backup"
-    local config_file="${config_dir}/config.sh"
+    local config_file
+    config_file="$(config_path)"
 
     if [ -f "${config_file}" ]; then
         # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
@@ -329,7 +310,7 @@ read_config() {
         return
     fi
 
-    mkdir --parent "${config_dir}"
+    mkdir --parent "$(config_dir)"
     write_config_template "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
@@ -398,6 +379,66 @@ generate_password_file() {
     export RESTIC_PASSWORD_FILE="${password_file}"
 }
 
+# src/lib/each.sh
+# shellcheck shell=bash
+
+each() {
+    # iterate through stdin lines, and execute a command for each line.
+    # the stdin line will be passed to the command as the last parameter.
+    #
+    # example usage:
+    #
+    #     printf 'foo\nbar' | each echo "you said: "
+    #
+    # outputs:
+    #
+    #     you said: foo
+    #     you said: bar
+    #
+    while IFS= read -r line || [ -n "${line}" ]
+    do
+        "${@}" "${line}"
+    done < <(cat)
+}
+
+# src/lib/lines.sh
+# shellcheck shell=bash
+
+lines() {
+    # iterate through args, and output each one on a new line.
+    #
+    # example usage:
+    #
+    #     lines a b c
+    #
+    # outputs:
+    #
+    #     a
+    #     b
+    #     c
+    #
+    for i in "${@}"; do
+        echo "${i}"
+    done
+}
+
+# src/lib/logging.sh
+# shellcheck shell=bash
+
+panic() {
+    # for when you really shouldn't keep calm and carry on
+    echo "FATAL: ${*}" >&2
+    exit 1
+}
+
+not_implemented() {
+    panic "Not implemented yet."
+}
+
+log_info() {
+    echo "${*}"
+}
+
 # src/lib/temp_file.sh
 # shellcheck shell=bash
 
@@ -456,6 +497,41 @@ backup_mount_command() {
 
 }
 
+# :command.function
+backup_config_command() {
+  # src/config_command.sh
+  # shellcheck shell=bash
+
+  config_file="$(config_path)"
+
+  if [ ! -f "${config_file}" ]; then
+      mkdir --parent "$(config_dir)"
+      write_config_template "${config_file}"
+  fi
+
+  if [ "${args[--edit]:-}" == "" ]; then
+      if [ "${args[--no-pager]:-}" != "" ]; then
+          cat "${config_file}"
+          exit
+      fi
+
+      if command -v bat &> /dev/null; then
+          bat --language bash "${config_file}"
+      elif command -v less &> /dev/null; then
+          less "${config_file}"
+      else
+          cat "${config_file}"
+      fi
+  else
+      if [ "${EDITOR:-}" == "" ]; then
+          panic "\$EDITOR has not been set!"
+      else
+          "${EDITOR}" "${config_file}"
+      fi
+  fi
+
+}
+
 # :command.parse_requirements
 parse_requirements() {
   # :command.fixed_flags_filter
@@ -510,6 +586,13 @@ parse_requirements() {
       action="mount"
       shift
       backup_mount_parse_requirements "$@"
+      shift $#
+      ;;
+
+    config)
+      action="config"
+      shift
+      backup_config_parse_requirements "$@"
       shift $#
       ;;
 
@@ -785,6 +868,65 @@ backup_mount_parse_requirements() {
 
 }
 
+# :command.parse_requirements
+backup_config_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        backup_config_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="config"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+      # :flag.case
+      --edit | -e)
+
+        # :flag.case_no_arg
+        args['--edit']=1
+        shift
+        ;;
+
+      # :flag.case
+      --no-pager | -n)
+
+        # :flag.case_no_arg
+        args['--no-pager']=1
+        shift
+        ;;
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        printf "invalid argument: %s\n" "$key" >&2
+        exit 1
+
+        ;;
+
+    esac
+  done
+
+}
+
 # :command.user_hooks
 before_hook() {
   # src/before.sh
@@ -823,6 +965,7 @@ run() {
     "run") backup_run_command ;;
     "check") backup_check_command ;;
     "mount") backup_mount_command ;;
+    "config") backup_config_command ;;
   esac
 }
 

@@ -28,6 +28,7 @@ backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
 
 src/bashly.yml: src/bashly.cue
+	cue fmt src/bashly.cue
 	cue export --out yaml src/bashly.cue > src/bashly.yml
 
 tests/docker-compose.yml: tests/docker-compose.cue

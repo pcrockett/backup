@@ -61,4 +61,20 @@ commands: [
 			#DestArg,
 		]
 	},
+	{
+		name: "config"
+		help: "View or edit your backup config"
+		flags: [
+			{
+				long:  "--edit"
+				short: "-e"
+				help:  "Open your config in \\$EDITOR"
+			},
+			{
+				long:  "--no-pager"
+				short: "-n"
+				help:  "Don't use `bat` or `less`"
+			},
+		]
+	},
 ]
