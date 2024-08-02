@@ -14,4 +14,6 @@ restic mount "${mount_dir}" &
 restic_pid=${!}
 echo "${restic_pid}" > "$(get_mount_pid_file "${args[destination]}")"
 
+# TODO: Detect when `restic mount` background job fails and abort early
+
 wait_for_mount "${mount_dir}"  # make sure temp files aren't cleaned up before restic starts
