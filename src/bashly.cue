@@ -62,6 +62,13 @@ commands: [
 		]
 	},
 	{
+		name: "unmount"
+		help: "Unmount your backup repository"
+		args: [
+			#DestArg,
+		]
+	},
+	{
 		name: "config"
 		help: "View or edit your backup config"
 		flags: [

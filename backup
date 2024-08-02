@@ -26,11 +26,12 @@ backup_usage() {
   echo
   # :command.usage_commands
   printf "%s\n" "Commands:"
-  printf "  %s   Initialize a new repository\n" "init  "
-  printf "  %s   Backup data to one or both repositories\n" "run   "
-  printf "  %s   Check your backup repository for errors\n" "check "
-  printf "  %s   Mount your backup repository\n" "mount "
-  printf "  %s   View or edit your backup config\n" "config"
+  printf "  %s   Initialize a new repository\n" "init   "
+  printf "  %s   Backup data to one or both repositories\n" "run    "
+  printf "  %s   Check your backup repository for errors\n" "check  "
+  printf "  %s   Mount your backup repository\n" "mount  "
+  printf "  %s   Unmount your backup repository\n" "unmount"
+  printf "  %s   View or edit your backup config\n" "config "
   echo
 
   # :command.long_usage
@@ -161,6 +162,35 @@ backup_mount_usage() {
   printf "%s\n" "Usage:"
   printf "  backup mount DESTINATION\n"
   printf "  backup mount --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DESTINATION"
+    printf "    Destination repository (s3 or usb)\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+backup_unmount_usage() {
+  printf "backup unmount - Unmount your backup repository\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  backup unmount DESTINATION\n"
+  printf "  backup unmount --help | -h\n"
   echo
 
   # :command.long_usage
@@ -439,6 +469,43 @@ log_info() {
     echo "${*}"
 }
 
+# src/lib/mount.sh
+# shellcheck shell=bash
+
+get_mount_dir() {
+    local backup_dest="${1}"
+    echo "${XDG_STATE_HOME}/backup/mount/${backup_dest}"
+}
+
+get_mount_pid_file() {
+    local backup_dest="${1}"
+    local pid_dir="${XDG_STATE_HOME}/backup/pid"
+    mkdir --parent "${pid_dir}"
+    echo "${pid_dir}/${backup_dest}"
+}
+
+is_mounted() {
+    local dir_path="${1}"
+    findmnt --raw --noheadings --output TARGET "${dir_path}" > /dev/null
+}
+
+wait_for_mount() {
+    local dir_path="${1}"
+
+    local MOUNT_TIMEOUT_SECONDS=20
+    local iteration_count=0
+    while ! is_mounted "${dir_path}"
+    do
+        iteration_count=$((iteration_count+1))
+
+        if [ ${iteration_count} -gt ${MOUNT_TIMEOUT_SECONDS} ]; then
+            panic "Unable to mount \"${dir_path}\" : timeout."
+        else
+            sleep 1
+        fi
+    done
+}
+
 # src/lib/temp_file.sh
 # shellcheck shell=bash
 
@@ -491,9 +558,41 @@ backup_check_command() {
 backup_mount_command() {
   # src/mount_command.sh
   # shellcheck shell=bash
+  # shellcheck disable=SC2154
 
-  inspect_args
-  not_implemented
+  read_config
+
+  mount_dir="$(get_mount_dir "${args[destination]}")"
+  mkdir --parent "${mount_dir}"
+
+  if is_mounted "${mount_dir}"; then
+      panic "Already mounted: ${mount_dir}"
+  fi
+
+  restic mount "${mount_dir}" &
+  restic_pid=${!}
+  echo "${restic_pid}" > "$(get_mount_pid_file "${args[destination]}")"
+
+  wait_for_mount "${mount_dir}"  # make sure temp files aren't cleaned up before restic starts
+
+}
+
+# :command.function
+backup_unmount_command() {
+  # src/unmount_command.sh
+  # shellcheck shell=bash
+  # shellcheck disable=SC2154
+
+  mount_dir="$(get_mount_dir "${args[destination]}")"
+
+  if [ ! -d "${mount_dir}" ] || ! is_mounted "${mount_dir}"; then
+      exit 0
+  fi
+
+  pid_file="$(get_mount_pid_file "${args[destination]}")"
+  pid="$(head --lines 1 "${pid_file}")"
+  kill -SIGTERM "${pid}"
+  rm -f "${pid_file}"
 
 }
 
@@ -594,6 +693,13 @@ parse_requirements() {
       action="mount"
       shift
       backup_mount_parse_requirements "$@"
+      shift $#
+      ;;
+
+    unmount)
+      action="unmount"
+      shift
+      backup_unmount_parse_requirements "$@"
       shift $#
       ;;
 
@@ -877,6 +983,63 @@ backup_mount_parse_requirements() {
 }
 
 # :command.parse_requirements
+backup_unmount_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        backup_unmount_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="unmount"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        # :argument.case
+        if [[ -z ${args['destination']+x} ]]; then
+          args['destination']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['destination']+x} ]]; then
+    printf "missing required argument: DESTINATION\nusage: backup unmount DESTINATION\n" >&2
+
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
 backup_config_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
@@ -940,6 +1103,7 @@ before_hook() {
   # src/before.sh
   # shellcheck shell=bash
 
+  XDG_STATE_HOME="${XDG_STATE_HOME:-"${HOME}/.local/state"}"
   BACKUP_TEMP_DIR="$(mktemp --directory backup.XXXXXX)"
 
   on_exit() {
@@ -973,6 +1137,7 @@ run() {
     "run") backup_run_command ;;
     "check") backup_check_command ;;
     "mount") backup_mount_command ;;
+    "unmount") backup_unmount_command ;;
     "config") backup_config_command ;;
   esac
 }
