@@ -367,7 +367,7 @@ write_config_template() {
 #
 AWS_ACCESS_KEY_ID="TODO"
 AWS_SECRET_ACCESS_KEY="TODO"
-RESTIC_REPOSITORY="s3:https://example.com/bucket-name"
+S3_REPOSITORY_URL="s3:https://example.com/bucket-name"
 RESTIC_E2EE_PASSWORD="TODO"
 
 BACKUP_PATHS=(
@@ -406,7 +406,7 @@ EOF
 export_restic_vars() {
     export AWS_ACCESS_KEY_ID
     export AWS_SECRET_ACCESS_KEY
-    export RESTIC_REPOSITORY
+    export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
 
     password_file="$(temp_file)"
     echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
