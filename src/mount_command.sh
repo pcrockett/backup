@@ -2,9 +2,10 @@
 # shellcheck disable=SC2154
 
 read_config
+configure_restic "${args[destination]}"
 
 mount_dir="$(get_mount_dir "${args[destination]}")"
-mkdir --parent "${mount_dir}"
+mkdir_private "${mount_dir}"
 
 if is_mounted "${mount_dir}"; then
     panic "Already mounted: ${mount_dir}"

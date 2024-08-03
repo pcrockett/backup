@@ -15,11 +15,10 @@ read_config() {
     if [ -f "${config_file}" ]; then
         # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
         source "${config_file}"
-        export_restic_vars
         return
     fi
 
-    mkdir --parent "$(config_dir)"
+    mkdir_private "$(config_dir)"
     write_config_template "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
@@ -34,20 +33,25 @@ read_config() {
     "${EDITOR}" "${config_file}"
     # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
     source "${config_file}"
-    export_restic_vars
 }
 
 write_config_template() {
     cat > "${1}" <<EOF
 # shellcheck shell=bash
 #
-# recommended: all this information should be stored in a password manager. this makes your life
+# Recommendation: All this information should be stored in a password manager. This makes your life
 # much easier when it's time to restore data later.
 #
+
+RESTIC_E2EE_PASSWORD="TODO"
+
+# S3 backup destination config
 AWS_ACCESS_KEY_ID="TODO"
 AWS_SECRET_ACCESS_KEY="TODO"
 S3_REPOSITORY_URL="s3:https://example.com/bucket-name"
-RESTIC_E2EE_PASSWORD="TODO"
+
+# USB backup destination config
+USB_FILESYSTEM_UUID="Find this with the \`blkid\` command"
 
 BACKUP_PATHS=(
     "${HOME}"
@@ -82,10 +86,23 @@ EXCLUDE=(
 EOF
 }
 
-export_restic_vars() {
-    export AWS_ACCESS_KEY_ID
-    export AWS_SECRET_ACCESS_KEY
-    export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
+configure_restic() {
+    local backup_dest="${1}"
+
+    case "${backup_dest}" in
+        s3)
+            export AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY
+            export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
+        ;;
+        usb)
+            RESTIC_REPOSITORY="$(get_usb_repo_path)"
+            export RESTIC_REPOSITORY
+        ;;
+        *)
+            panic "Unexpected backup destination: ${backup_dest}"
+        ;;
+    esac
 
     password_file="$(temp_file)"
     echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"

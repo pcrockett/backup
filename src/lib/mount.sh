@@ -14,13 +14,8 @@ get_mount_pid_file() {
     else
         pid_dir="${XDG_STATE_HOME}/backup/pid"
     fi
-    mkdir --parent "${pid_dir}"
+    mkdir_private "${pid_dir}"
     echo "${pid_dir}/${backup_dest}"
-}
-
-is_mounted() {
-    local dir_path="${1}"
-    findmnt --raw --noheadings --output TARGET "${dir_path}" > /dev/null
 }
 
 wait_for_mount() {

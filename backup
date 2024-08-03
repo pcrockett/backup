@@ -336,11 +336,10 @@ read_config() {
     if [ -f "${config_file}" ]; then
         # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
         source "${config_file}"
-        export_restic_vars
         return
     fi
 
-    mkdir --parent "$(config_dir)"
+    mkdir_private "$(config_dir)"
     write_config_template "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
@@ -355,20 +354,25 @@ read_config() {
     "${EDITOR}" "${config_file}"
     # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
     source "${config_file}"
-    export_restic_vars
 }
 
 write_config_template() {
     cat > "${1}" <<EOF
 # shellcheck shell=bash
 #
-# recommended: all this information should be stored in a password manager. this makes your life
+# Recommendation: All this information should be stored in a password manager. This makes your life
 # much easier when it's time to restore data later.
 #
+
+RESTIC_E2EE_PASSWORD="TODO"
+
+# S3 backup destination config
 AWS_ACCESS_KEY_ID="TODO"
 AWS_SECRET_ACCESS_KEY="TODO"
 S3_REPOSITORY_URL="s3:https://example.com/bucket-name"
-RESTIC_E2EE_PASSWORD="TODO"
+
+# USB backup destination config
+USB_FILESYSTEM_UUID="Find this with the \`blkid\` command"
 
 BACKUP_PATHS=(
     "${HOME}"
@@ -403,10 +407,23 @@ EXCLUDE=(
 EOF
 }
 
-export_restic_vars() {
-    export AWS_ACCESS_KEY_ID
-    export AWS_SECRET_ACCESS_KEY
-    export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
+configure_restic() {
+    local backup_dest="${1}"
+
+    case "${backup_dest}" in
+        s3)
+            export AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY
+            export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
+        ;;
+        usb)
+            RESTIC_REPOSITORY="$(get_usb_repo_path)"
+            export RESTIC_REPOSITORY
+        ;;
+        *)
+            panic "Unexpected backup destination: ${backup_dest}"
+        ;;
+    esac
 
     password_file="$(temp_file)"
     echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
@@ -433,6 +450,14 @@ each() {
     do
         "${@}" "${line}"
     done < <(cat)
+}
+
+# src/lib/is_mounted.sh
+# shellcheck shell=bash
+
+is_mounted() {
+    local dir_path="${1}"
+    findmnt --raw --noheadings --output TARGET "${dir_path}" > /dev/null
 }
 
 # src/lib/lines.sh
@@ -473,6 +498,16 @@ log_info() {
     echo "${*}"
 }
 
+# src/lib/mkdir_private.sh
+# shellcheck shell=bash
+
+mkdir_private() {
+    (
+        umask u=rwx,g=,o=
+        mkdir --parent "${1}"
+    )
+}
+
 # src/lib/mount.sh
 # shellcheck shell=bash
 
@@ -490,13 +525,8 @@ get_mount_pid_file() {
     else
         pid_dir="${XDG_STATE_HOME}/backup/pid"
     fi
-    mkdir --parent "${pid_dir}"
+    mkdir_private "${pid_dir}"
     echo "${pid_dir}/${backup_dest}"
-}
-
-is_mounted() {
-    local dir_path="${1}"
-    findmnt --raw --noheadings --output TARGET "${dir_path}" > /dev/null
 }
 
 wait_for_mount() {
@@ -524,6 +554,18 @@ proc_is_running() {
     ps "${1}" &> /dev/null
 }
 
+# src/lib/sudo.sh
+# shellcheck shell=bash
+
+sudo_if_needed() {
+    if [ "$(id --user)" -eq 0 ]; then
+        "${@}"
+    else
+        echo "Running \`sudo ${*}\`..."
+        sudo "${@}"
+    fi
+}
+
 # src/lib/temp_file.sh
 # shellcheck shell=bash
 
@@ -533,13 +575,70 @@ temp_file() {
     mktemp --tmpdir="${BACKUP_TEMP_DIR}"
 }
 
+# src/lib/usb.sh
+# shellcheck shell=bash
+
+get_device_path() {
+    # get the filesystem location of a device by UUID
+    local uuid="${1}"
+    blkid --uuid "${uuid}" || panic "Unable to get device path for UUID ${uuid}"
+}
+
+get_device_current_mount_path() {
+    # get the filesystem location where a device is mounted
+    #
+    # accepts single parameter: either the device path itself, or the (suspected)
+    # mount directory path
+    #
+    # writes nothing to stdout if the device isn't mounted
+    local device_or_mount_path="${1}"
+    findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
+}
+
+get_usb_drive_mount_path() {
+    local run_user_dir mount_path
+    run_user_dir="/run/user/$(id --user)"
+    if [ -d "${run_user_dir}" ]; then
+        mount_path="${run_user_dir}/backup/usb_drive"
+    else
+        mount_path="${XDG_STATE_HOME}/backup/usb_drive"
+    fi
+    mkdir_private "${mount_path}"
+    echo "${mount_path}"
+}
+
+get_usb_repo_path() {
+    echo "$(get_usb_drive_mount_path)/repo"
+}
+
+unmount_usb_device() {
+    sudo_if_needed umount "$(get_usb_drive_mount_path)"
+}
+
 # :command.command_functions
 # :command.function
 backup_init_command() {
   # src/init_command.sh
   # shellcheck shell=bash
+  # shellcheck disable=SC2154
 
   read_config
+  configure_restic "${args[destination]}"
+
+  if [ "${args[destination]}" == "usb" ]; then
+      device_path="$(get_device_path "${USB_FILESYSTEM_UUID}")"
+      current_mount_path="$(get_device_current_mount_path "${device_path}")"
+      desired_mount_path="$(get_usb_drive_mount_path)"
+      if [ "${current_mount_path}" == "" ]; then
+          echo "Mounting ${device_path} to ${desired_mount_path}..."
+          sudo_if_needed mount "${device_path}" "${desired_mount_path}"
+      elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
+          panic "${device_path} is already mounted to ${current_mount_path}"
+      fi
+      trap 'unmount_usb_device' EXIT
+      touch "${desired_mount_path}/.nobackup"
+  fi
+
   restic init
 
 }
@@ -548,8 +647,10 @@ backup_init_command() {
 backup_run_command() {
   # src/run_command.sh
   # shellcheck shell=bash
+  # shellcheck disable=SC2154
 
   read_config
+  configure_restic "${args[--dest]}"
 
   exclude_file="$(temp_file)"
   lines "${EXCLUDE[@]}" > "${exclude_file}"
@@ -566,8 +667,10 @@ backup_run_command() {
 backup_check_command() {
   # src/check_command.sh
   # shellcheck shell=bash
+  # shellcheck disable=SC2154
 
   read_config
+  configure_restic "${args[--dest]}"
   restic --verbose check --read-data-subset 100M
 
 }
@@ -579,9 +682,10 @@ backup_mount_command() {
   # shellcheck disable=SC2154
 
   read_config
+  configure_restic "${args[destination]}"
 
   mount_dir="$(get_mount_dir "${args[destination]}")"
-  mkdir --parent "${mount_dir}"
+  mkdir_private "${mount_dir}"
 
   if is_mounted "${mount_dir}"; then
       panic "Already mounted: ${mount_dir}"
@@ -632,7 +736,7 @@ backup_config_command() {
   config_file="$(config_path)"
 
   if [ ! -f "${config_file}" ]; then
-      mkdir --parent "$(config_dir)"
+      mkdir_private "$(config_dir)"
       write_config_template "${config_file}"
   fi
 
