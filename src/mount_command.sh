@@ -10,10 +10,18 @@ if is_mounted "${mount_dir}"; then
     panic "Already mounted: ${mount_dir}"
 fi
 
-restic mount "${mount_dir}" &
+restic_output_file="$(temp_file)"
+
+restic mount "${mount_dir}" > "${restic_output_file}" &
 restic_pid=${!}
 echo "${restic_pid}" > "$(get_mount_pid_file "${args[destination]}")"
 
-# TODO: Detect when `restic mount` background job fails and abort early
+# make sure temp files aren't cleaned up before restic starts
+wait_for_mount "${mount_dir}" "${restic_pid}"
 
-wait_for_mount "${mount_dir}"  # make sure temp files aren't cleaned up before restic starts
+if is_mounted "${mount_dir}" && proc_is_running "${restic_pid}"; then
+    echo "Repository mounted at ${mount_dir}"
+else
+    cat "${restic_output_file}"
+    panic "Unable to mount backup repository"
+fi

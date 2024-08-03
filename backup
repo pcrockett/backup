@@ -491,10 +491,11 @@ is_mounted() {
 
 wait_for_mount() {
     local dir_path="${1}"
+    local pid="${2}"
 
     local MOUNT_TIMEOUT_SECONDS=20
     local iteration_count=0
-    while ! is_mounted "${dir_path}"
+    while ! is_mounted "${dir_path}" && proc_is_running "${pid}"
     do
         iteration_count=$((iteration_count+1))
 
@@ -504,6 +505,13 @@ wait_for_mount() {
             sleep 1
         fi
     done
+}
+
+# src/lib/proc_is_running.sh
+# shellcheck shell=bash
+
+proc_is_running() {
+    ps "${1}" &> /dev/null
 }
 
 # src/lib/temp_file.sh
@@ -569,13 +577,21 @@ backup_mount_command() {
       panic "Already mounted: ${mount_dir}"
   fi
 
-  restic mount "${mount_dir}" &
+  restic_output_file="$(temp_file)"
+
+  restic mount "${mount_dir}" > "${restic_output_file}" &
   restic_pid=${!}
   echo "${restic_pid}" > "$(get_mount_pid_file "${args[destination]}")"
 
-  # TODO: Detect when `restic mount` background job fails and abort early
+  # make sure temp files aren't cleaned up before restic starts
+  wait_for_mount "${mount_dir}" "${restic_pid}"
 
-  wait_for_mount "${mount_dir}"  # make sure temp files aren't cleaned up before restic starts
+  if is_mounted "${mount_dir}" && proc_is_running "${restic_pid}"; then
+      echo "Repository mounted at ${mount_dir}"
+  else
+      cat "${restic_output_file}"
+      panic "Unable to mount backup repository"
+  fi
 
 }
 

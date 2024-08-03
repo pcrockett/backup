@@ -19,10 +19,11 @@ is_mounted() {
 
 wait_for_mount() {
     local dir_path="${1}"
+    local pid="${2}"
 
     local MOUNT_TIMEOUT_SECONDS=20
     local iteration_count=0
-    while ! is_mounted "${dir_path}"
+    while ! is_mounted "${dir_path}" && proc_is_running "${pid}"
     do
         iteration_count=$((iteration_count+1))
 
