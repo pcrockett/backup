@@ -479,7 +479,13 @@ get_mount_dir() {
 
 get_mount_pid_file() {
     local backup_dest="${1}"
-    local pid_dir="${XDG_STATE_HOME}/backup/pid"
+    local pid_dir run_user_dir
+    run_user_dir="/run/user/$(id --user)"
+    if [ -d "${run_user_dir}" ]; then
+        pid_dir="${run_user_dir}/backup/pid"
+    else
+        pid_dir="${XDG_STATE_HOME}/backup/pid"
+    fi
     mkdir --parent "${pid_dir}"
     echo "${pid_dir}/${backup_dest}"
 }
