@@ -5,7 +5,7 @@ build: backup
 .PHONY: build
 
 lint: backup
-	shellcheck ./backup src/*.sh tests/*.sh tests/*.bats
+	shellcheck ./backup src/*.sh src/lib/*.sh tests/*.sh tests/*.bats
 .PHONY: lint
 
 test: backup compose_up
