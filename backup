@@ -422,7 +422,7 @@ configure_restic() {
             export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
         ;;
         local)
-            RESTIC_REPOSITORY="$(get_local_repo_path)"
+            RESTIC_REPOSITORY="$(get_local_repo_path "${LOCAL_FILESYSTEM_UUID}")"
             export RESTIC_REPOSITORY
         ;;
         *)
@@ -455,6 +455,13 @@ each() {
     do
         "${@}" "${line}"
     done < <(cat)
+}
+
+# src/lib/escape_value.sh
+# shellcheck shell=bash
+
+escape_value() {
+    printf '%q' "${1}"
 }
 
 # src/lib/is_mounted.sh
@@ -507,23 +514,46 @@ get_device_current_mount_path() {
 }
 
 get_local_drive_mount_path() {
-    local run_user_dir mount_path
+    local uuid run_user_dir mount_path
+    uuid="${1}"
     run_user_dir="/run/user/$(id --user)"
     if [ -d "${run_user_dir}" ]; then
-        mount_path="${run_user_dir}/backup/local_drive"
+        mount_path="${run_user_dir}/backup/${uuid}"
     else
-        mount_path="${XDG_STATE_HOME}/backup/local_drive"
+        mount_path="${XDG_STATE_HOME}/backup/${uuid}"
     fi
     mkdir_private "${mount_path}"
     echo "${mount_path}"
 }
 
 get_local_repo_path() {
-    echo "$(get_local_drive_mount_path)/repo"
+    local uuid="${1}"
+    echo "$(get_local_drive_mount_path "${uuid}")/repo"
 }
 
-unmount_local_device() {
-    sudo_if_needed umount "$(get_local_drive_mount_path)"
+unmount_device_by_uuid() {
+    local uuid="${1}"
+    sudo_if_needed umount "$(get_local_drive_mount_path "${uuid}")"
+}
+
+mount_device_by_uuid() {
+    local uuid device_path current_mount_path desired_mount_path
+    uuid="${1}"
+    device_path="$(get_device_path "${uuid}")"
+    current_mount_path="$(get_device_current_mount_path "${device_path}")"
+    desired_mount_path="$(get_local_drive_mount_path "${uuid}")"
+    if [ "${current_mount_path}" == "" ]; then
+        echo "Mounting ${device_path} to ${desired_mount_path}..."
+        sudo_if_needed mount "${device_path}" "${desired_mount_path}"
+    elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
+        panic "${device_path} is already mounted to ${current_mount_path}"
+    fi
+}
+
+unmount_on_exit() {
+    local filesystem_uuid="${1}"
+    # shellcheck disable=SC2064  # intentionally expanding this trap string now
+    trap "unmount_device_by_uuid $(escape_value "${filesystem_uuid}")" EXIT
 }
 
 # src/lib/logging.sh
@@ -631,17 +661,9 @@ backup_init_command() {
   configure_restic "${args[destination]}"
 
   if [ "${args[destination]}" == "local" ]; then
-      device_path="$(get_device_path "${LOCAL_FILESYSTEM_UUID}")"
-      current_mount_path="$(get_device_current_mount_path "${device_path}")"
-      desired_mount_path="$(get_local_drive_mount_path)"
-      if [ "${current_mount_path}" == "" ]; then
-          echo "Mounting ${device_path} to ${desired_mount_path}..."
-          sudo_if_needed mount "${device_path}" "${desired_mount_path}"
-      elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
-          panic "${device_path} is already mounted to ${current_mount_path}"
-      fi
-      trap 'unmount_local_device' EXIT
-      touch "${desired_mount_path}/.nobackup"
+      mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+      unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+      touch "$(get_local_drive_mount_path "${LOCAL_FILESYSTEM_UUID}")/.nobackup"
   fi
 
   restic init
@@ -656,6 +678,11 @@ backup_run_command() {
 
   read_config
   configure_restic "${args[--dest]}"
+
+  if [ "${args[--dest]}" == "local" ]; then
+      mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+      unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+  fi
 
   exclude_file="$(temp_file)"
   lines "${EXCLUDE[@]}" > "${exclude_file}"
