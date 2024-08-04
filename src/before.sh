@@ -6,6 +6,7 @@
 
 XDG_STATE_HOME="${XDG_STATE_HOME:-"${HOME}/.local/state"}"
 BACKUP_TEMP_DIR="$(mktemp --directory "${TMPDIR:-/tmp}/backup.XXXXXX")"
+chmod -R go-rwx "${BACKUP_TEMP_DIR}"
 
 on_exit() {
     rm -rf "${BACKUP_TEMP_DIR}"
