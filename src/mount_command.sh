@@ -11,6 +11,10 @@ if is_mounted "${mount_dir}"; then
     panic "Already mounted: ${mount_dir}"
 fi
 
+if [ "${args[destination]}" == "local" ]; then
+    mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+fi
+
 restic_output_file="$(temp_file)"
 
 restic mount "${mount_dir}" > "${restic_output_file}" &

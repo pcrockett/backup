@@ -622,11 +622,26 @@ wait_for_mount() {
     done
 }
 
-# src/lib/proc_is_running.sh
+# src/lib/process.sh
 # shellcheck shell=bash
 
 proc_is_running() {
     ps "${1}" &> /dev/null
+}
+
+wait_for_process() {
+    local pid="${1}"
+    local TIMEOUT_SECONDS=20
+    local iteration_count=0
+    while proc_is_running "${pid}"
+    do
+        iteration_count=$((iteration_count+1))
+        if [ ${iteration_count} -gt ${TIMEOUT_SECONDS} ]; then
+            panic "Timeout while waiting for process ${pid} to stop."
+        else
+            sleep 1
+        fi
+    done
 }
 
 # src/lib/sudo.sh
@@ -729,6 +744,10 @@ backup_mount_command() {
       panic "Already mounted: ${mount_dir}"
   fi
 
+  if [ "${args[destination]}" == "local" ]; then
+      mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+  fi
+
   restic_output_file="$(temp_file)"
 
   restic mount "${mount_dir}" > "${restic_output_file}" &
@@ -762,6 +781,13 @@ backup_unmount_command() {
   pid_file="$(get_mount_pid_file "${args[destination]}")"
   pid="$(head --lines 1 "${pid_file}")"
   kill -SIGTERM "${pid}"
+  wait_for_process "${pid}"
+
+  if [ "${args[destination]}" == "local" ]; then
+      read_config
+      unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+  fi
+
   rm -f "${pid_file}"
 
 }
