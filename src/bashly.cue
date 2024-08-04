@@ -2,15 +2,14 @@ name:    "backup"
 help:    "A very opinionated backup tool"
 version: "0.1.0"
 
-#DestFlag: {
-	long:  "--dest"
-	short: "-d"
-	arg:   "destination"
-	help:  "Destination repository"
+#DestOptionalArg: {
+	name:     "destination"
+	help:     "Destination repository"
+	required: false
 	allowed: ["local", "remote"]
 }
 
-#DestArg: {
+#DestRequiredArg: {
 	name:     "destination"
 	help:     "Destination repository"
 	required: true
@@ -22,7 +21,7 @@ commands: [
 		name: "init"
 		help: "Initialize a new repository"
 		args: [
-			#DestArg,
+			#DestRequiredArg,
 		]
 		examples: [
 			"backup init remote",
@@ -31,43 +30,47 @@ commands: [
 	{
 		name: "run"
 		help: "Backup data to one or both repositories"
-		flags: [
-			#DestFlag,
+		args: [
+			#DestOptionalArg,
 		]
 		examples: [
 			"backup run",
-			"backup run --dest remote",
+			"backup run local",
+			"backup run remote",
 		]
 	},
 	{
 		name: "check"
 		help: "Check your backup repository for errors"
 		flags: [
-			#DestFlag,
 			{
 				long:  "--file"
 				short: "-f"
 				help:  "Verify a file on your local device matches the backup"
 			},
 		]
+		args: [
+			#DestOptionalArg,
+		]
 		examples: [
 			"backup check",
-			"backup check --dest local",
+			"backup check local",
 			"backup check --file foo/bar.txt",
+			"backup check remote --file foo/bar.txt",
 		]
 	},
 	{
 		name: "mount"
 		help: "Mount your backup repository"
 		args: [
-			#DestArg,
+			#DestRequiredArg,
 		]
 	},
 	{
 		name: "unmount"
 		help: "Unmount your backup repository"
 		args: [
-			#DestArg,
+			#DestRequiredArg,
 		]
 	},
 	{

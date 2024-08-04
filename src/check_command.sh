@@ -19,7 +19,7 @@ check_remote() {
     configure_and_run remote
 }
 
-case "${args[--dest]:-}" in
+case "${args[destination]:-}" in
     local)
         check_local
     ;;

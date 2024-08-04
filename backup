@@ -89,7 +89,7 @@ backup_run_usage() {
   printf "backup run - Backup data to one or both repositories\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  backup run [OPTIONS]\n"
+  printf "  backup run [DESTINATION]\n"
   printf "  backup run --help | -h\n"
   echo
 
@@ -97,22 +97,25 @@ backup_run_usage() {
   if [[ -n $long_usage ]]; then
     printf "%s\n" "Options:"
 
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--dest, -d DESTINATION"
-    printf "    Destination repository\n"
-    printf "    Allowed: local, remote\n"
-    echo
-
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DESTINATION"
+    printf "    Destination repository\n"
+    printf "    Allowed: local, remote\n"
+    echo
+
     # :command.usage_examples
     printf "%s\n" "Examples:"
     printf "  backup run\n"
-    printf "  backup run --dest remote\n"
+    printf "  backup run local\n"
+    printf "  backup run remote\n"
     echo
 
   fi
@@ -123,7 +126,7 @@ backup_check_usage() {
   printf "backup check - Check your backup repository for errors\n\n"
 
   printf "%s\n" "Usage:"
-  printf "  backup check [OPTIONS]\n"
+  printf "  backup check [DESTINATION] [OPTIONS]\n"
   printf "  backup check --help | -h\n"
   echo
 
@@ -132,12 +135,6 @@ backup_check_usage() {
     printf "%s\n" "Options:"
 
     # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--dest, -d DESTINATION"
-    printf "    Destination repository\n"
-    printf "    Allowed: local, remote\n"
-    echo
-
     # :flag.usage
     printf "  %s\n" "--file, -f"
     printf "    Verify a file on your local device matches the backup\n"
@@ -148,11 +145,21 @@ backup_check_usage() {
     printf "    Show this help\n"
     echo
 
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DESTINATION"
+    printf "    Destination repository\n"
+    printf "    Allowed: local, remote\n"
+    echo
+
     # :command.usage_examples
     printf "%s\n" "Examples:"
     printf "  backup check\n"
-    printf "  backup check --dest local\n"
+    printf "  backup check local\n"
     printf "  backup check --file foo/bar.txt\n"
+    printf "  backup check remote --file foo/bar.txt\n"
     echo
 
   fi
@@ -717,7 +724,7 @@ backup_run_command() {
       configure_and_run remote
   }
 
-  case "${args[--dest]:-}" in
+  case "${args[destination]:-}" in
       local)
           backup_local
       ;;
@@ -757,7 +764,7 @@ backup_check_command() {
       configure_and_run remote
   }
 
-  case "${args[--dest]:-}" in
+  case "${args[destination]:-}" in
       local)
           check_local
       ;;
@@ -1075,19 +1082,6 @@ backup_run_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --dest | -d)
-
-        # :flag.case_arg
-        if [[ -n ${2+x} ]]; then
-          args['--dest']="$2"
-          shift
-          shift
-        else
-          printf "%s\n" "--dest requires an argument: --dest, -d DESTINATION" >&2
-          exit 1
-        fi
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -1097,8 +1091,14 @@ backup_run_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['destination']+x} ]]; then
+          args['destination']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
@@ -1106,8 +1106,8 @@ backup_run_parse_requirements() {
   done
 
   # :command.whitelist_filter
-  if [[ ${args['--dest']:-} ]] && [[ ! ${args['--dest']:-} =~ ^(local|remote)$ ]]; then
-    printf "%s\n" "--dest must be one of: local, remote" >&2
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
+    printf "%s\n" "destination must be one of: local, remote" >&2
     exit 1
   fi
 
@@ -1139,20 +1139,6 @@ backup_check_parse_requirements() {
     key="$1"
     case "$key" in
       # :flag.case
-      --dest | -d)
-
-        # :flag.case_arg
-        if [[ -n ${2+x} ]]; then
-          args['--dest']="$2"
-          shift
-          shift
-        else
-          printf "%s\n" "--dest requires an argument: --dest, -d DESTINATION" >&2
-          exit 1
-        fi
-        ;;
-
-      # :flag.case
       --file | -f)
 
         # :flag.case_no_arg
@@ -1168,8 +1154,14 @@ backup_check_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
+        # :argument.case
+        if [[ -z ${args['destination']+x} ]]; then
+          args['destination']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
 
         ;;
 
@@ -1177,8 +1169,8 @@ backup_check_parse_requirements() {
   done
 
   # :command.whitelist_filter
-  if [[ ${args['--dest']:-} ]] && [[ ! ${args['--dest']:-} =~ ^(local|remote)$ ]]; then
-    printf "%s\n" "--dest must be one of: local, remote" >&2
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
+    printf "%s\n" "destination must be one of: local, remote" >&2
     exit 1
   fi
 
