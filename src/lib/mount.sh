@@ -1,11 +1,16 @@
 # shellcheck shell=bash
 
-get_mount_dir() {
+mount:is_mountpoint() {
+    local dir_path="${1}"
+    findmnt --raw --noheadings --output TARGET "${dir_path}" > /dev/null
+}
+
+mount:mountpoint_for_backup_dest() {
     local backup_dest="${1}"
     echo "${XDG_STATE_HOME}/backup/mount/${backup_dest}"
 }
 
-get_mount_pid_file() {
+mount:pid_file_by_dest() {
     local backup_dest="${1}"
     local pid_dir run_user_dir
     run_user_dir="/run/user/$(id --user)"
@@ -18,13 +23,13 @@ get_mount_pid_file() {
     echo "${pid_dir}/${backup_dest}"
 }
 
-wait_for_mount() {
+mount:wait() {
     local dir_path="${1}"
     local pid="${2}"
 
     local MOUNT_TIMEOUT_SECONDS=20
     local iteration_count=0
-    while ! is_mounted "${dir_path}" && proc_is_running "${pid}"
+    while ! mount:is_mountpoint "${dir_path}" && proc_is_running "${pid}"
     do
         iteration_count=$((iteration_count+1))
 
