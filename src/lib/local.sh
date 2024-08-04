@@ -17,22 +17,22 @@ get_device_current_mount_path() {
     findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
 }
 
-get_usb_drive_mount_path() {
+get_local_drive_mount_path() {
     local run_user_dir mount_path
     run_user_dir="/run/user/$(id --user)"
     if [ -d "${run_user_dir}" ]; then
-        mount_path="${run_user_dir}/backup/usb_drive"
+        mount_path="${run_user_dir}/backup/local_drive"
     else
-        mount_path="${XDG_STATE_HOME}/backup/usb_drive"
+        mount_path="${XDG_STATE_HOME}/backup/local_drive"
     fi
     mkdir_private "${mount_path}"
     echo "${mount_path}"
 }
 
-get_usb_repo_path() {
-    echo "$(get_usb_drive_mount_path)/repo"
+get_local_repo_path() {
+    echo "$(get_local_drive_mount_path)/repo"
 }
 
-unmount_usb_device() {
-    sudo_if_needed umount "$(get_usb_drive_mount_path)"
+unmount_local_device() {
+    sudo_if_needed umount "$(get_local_drive_mount_path)"
 }

@@ -72,12 +72,13 @@ backup_init_usage() {
 
     # :argument.usage
     printf "  %s\n" "DESTINATION"
-    printf "    Destination repository (s3 or usb)\n"
+    printf "    Destination repository\n"
+    printf "    Allowed: local, remote\n"
     echo
 
     # :command.usage_examples
     printf "%s\n" "Examples:"
-    printf "  backup init s3\n"
+    printf "  backup init remote\n"
     echo
 
   fi
@@ -99,7 +100,8 @@ backup_run_usage() {
     # :command.usage_flags
     # :flag.usage
     printf "  %s\n" "--dest, -d DESTINATION"
-    printf "    Destination repository (s3 or usb)\n"
+    printf "    Destination repository\n"
+    printf "    Allowed: local, remote\n"
     echo
 
     # :command.usage_fixed_flags
@@ -110,7 +112,7 @@ backup_run_usage() {
     # :command.usage_examples
     printf "%s\n" "Examples:"
     printf "  backup run\n"
-    printf "  backup run --dest s3\n"
+    printf "  backup run --dest remote\n"
     echo
 
   fi
@@ -132,7 +134,8 @@ backup_check_usage() {
     # :command.usage_flags
     # :flag.usage
     printf "  %s\n" "--dest, -d DESTINATION"
-    printf "    Destination repository (s3 or usb)\n"
+    printf "    Destination repository\n"
+    printf "    Allowed: local, remote\n"
     echo
 
     # :flag.usage
@@ -148,7 +151,7 @@ backup_check_usage() {
     # :command.usage_examples
     printf "%s\n" "Examples:"
     printf "  backup check\n"
-    printf "  backup check --dest usb\n"
+    printf "  backup check --dest local\n"
     printf "  backup check --file foo/bar.txt\n"
     echo
 
@@ -178,7 +181,8 @@ backup_mount_usage() {
 
     # :argument.usage
     printf "  %s\n" "DESTINATION"
-    printf "    Destination repository (s3 or usb)\n"
+    printf "    Destination repository\n"
+    printf "    Allowed: local, remote\n"
     echo
 
   fi
@@ -207,7 +211,8 @@ backup_unmount_usage() {
 
     # :argument.usage
     printf "  %s\n" "DESTINATION"
-    printf "    Destination repository (s3 or usb)\n"
+    printf "    Destination repository\n"
+    printf "    Allowed: local, remote\n"
     echo
 
   fi
@@ -366,13 +371,13 @@ write_config_template() {
 
 RESTIC_E2EE_PASSWORD="TODO"
 
-# S3 backup destination config
+# Remote (S3-compatible) backup destination config
 AWS_ACCESS_KEY_ID="TODO"
 AWS_SECRET_ACCESS_KEY="TODO"
 S3_REPOSITORY_URL="s3:https://example.com/bucket-name"
 
-# USB backup destination config
-USB_FILESYSTEM_UUID="Find this with the \`blkid\` command"
+# Local (ex: USB) backup destination config
+LOCAL_FILESYSTEM_UUID="Find this with the \`blkid\` command"
 
 BACKUP_PATHS=(
     "${HOME}"
@@ -411,13 +416,13 @@ configure_restic() {
     local backup_dest="${1}"
 
     case "${backup_dest}" in
-        s3)
+        remote)
             export AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY
             export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
         ;;
-        usb)
-            RESTIC_REPOSITORY="$(get_usb_repo_path)"
+        local)
+            RESTIC_REPOSITORY="$(get_local_repo_path)"
             export RESTIC_REPOSITORY
         ;;
         *)
@@ -479,6 +484,46 @@ lines() {
     for i in "${@}"; do
         echo "${i}"
     done
+}
+
+# src/lib/local.sh
+# shellcheck shell=bash
+
+get_device_path() {
+    # get the filesystem location of a device by UUID
+    local uuid="${1}"
+    blkid --uuid "${uuid}" || panic "Unable to get device path for UUID ${uuid}"
+}
+
+get_device_current_mount_path() {
+    # get the filesystem location where a device is mounted
+    #
+    # accepts single parameter: either the device path itself, or the (suspected)
+    # mount directory path
+    #
+    # writes nothing to stdout if the device isn't mounted
+    local device_or_mount_path="${1}"
+    findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
+}
+
+get_local_drive_mount_path() {
+    local run_user_dir mount_path
+    run_user_dir="/run/user/$(id --user)"
+    if [ -d "${run_user_dir}" ]; then
+        mount_path="${run_user_dir}/backup/local_drive"
+    else
+        mount_path="${XDG_STATE_HOME}/backup/local_drive"
+    fi
+    mkdir_private "${mount_path}"
+    echo "${mount_path}"
+}
+
+get_local_repo_path() {
+    echo "$(get_local_drive_mount_path)/repo"
+}
+
+unmount_local_device() {
+    sudo_if_needed umount "$(get_local_drive_mount_path)"
 }
 
 # src/lib/logging.sh
@@ -575,46 +620,6 @@ temp_file() {
     mktemp --tmpdir="${BACKUP_TEMP_DIR}"
 }
 
-# src/lib/usb.sh
-# shellcheck shell=bash
-
-get_device_path() {
-    # get the filesystem location of a device by UUID
-    local uuid="${1}"
-    blkid --uuid "${uuid}" || panic "Unable to get device path for UUID ${uuid}"
-}
-
-get_device_current_mount_path() {
-    # get the filesystem location where a device is mounted
-    #
-    # accepts single parameter: either the device path itself, or the (suspected)
-    # mount directory path
-    #
-    # writes nothing to stdout if the device isn't mounted
-    local device_or_mount_path="${1}"
-    findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
-}
-
-get_usb_drive_mount_path() {
-    local run_user_dir mount_path
-    run_user_dir="/run/user/$(id --user)"
-    if [ -d "${run_user_dir}" ]; then
-        mount_path="${run_user_dir}/backup/usb_drive"
-    else
-        mount_path="${XDG_STATE_HOME}/backup/usb_drive"
-    fi
-    mkdir_private "${mount_path}"
-    echo "${mount_path}"
-}
-
-get_usb_repo_path() {
-    echo "$(get_usb_drive_mount_path)/repo"
-}
-
-unmount_usb_device() {
-    sudo_if_needed umount "$(get_usb_drive_mount_path)"
-}
-
 # :command.command_functions
 # :command.function
 backup_init_command() {
@@ -625,17 +630,17 @@ backup_init_command() {
   read_config
   configure_restic "${args[destination]}"
 
-  if [ "${args[destination]}" == "usb" ]; then
-      device_path="$(get_device_path "${USB_FILESYSTEM_UUID}")"
+  if [ "${args[destination]}" == "local" ]; then
+      device_path="$(get_device_path "${LOCAL_FILESYSTEM_UUID}")"
       current_mount_path="$(get_device_current_mount_path "${device_path}")"
-      desired_mount_path="$(get_usb_drive_mount_path)"
+      desired_mount_path="$(get_local_drive_mount_path)"
       if [ "${current_mount_path}" == "" ]; then
           echo "Mounting ${device_path} to ${desired_mount_path}..."
           sudo_if_needed mount "${device_path}" "${desired_mount_path}"
       elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
           panic "${device_path} is already mounted to ${current_mount_path}"
       fi
-      trap 'unmount_usb_device' EXIT
+      trap 'unmount_local_device' EXIT
       touch "${desired_mount_path}/.nobackup"
   fi
 
@@ -933,6 +938,12 @@ backup_init_parse_requirements() {
     exit 1
   fi
 
+  # :command.whitelist_filter
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
+    printf "%s\n" "destination must be one of: local, remote" >&2
+    exit 1
+  fi
+
 }
 
 # :command.parse_requirements
@@ -989,6 +1000,12 @@ backup_run_parse_requirements() {
 
     esac
   done
+
+  # :command.whitelist_filter
+  if [[ ${args['--dest']:-} ]] && [[ ! ${args['--dest']:-} =~ ^(local|remote)$ ]]; then
+    printf "%s\n" "--dest must be one of: local, remote" >&2
+    exit 1
+  fi
 
 }
 
@@ -1055,6 +1072,12 @@ backup_check_parse_requirements() {
     esac
   done
 
+  # :command.whitelist_filter
+  if [[ ${args['--dest']:-} ]] && [[ ! ${args['--dest']:-} =~ ^(local|remote)$ ]]; then
+    printf "%s\n" "--dest must be one of: local, remote" >&2
+    exit 1
+  fi
+
 }
 
 # :command.parse_requirements
@@ -1112,6 +1135,12 @@ backup_mount_parse_requirements() {
     exit 1
   fi
 
+  # :command.whitelist_filter
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
+    printf "%s\n" "destination must be one of: local, remote" >&2
+    exit 1
+  fi
+
 }
 
 # :command.parse_requirements
@@ -1166,6 +1195,12 @@ backup_unmount_parse_requirements() {
   if [[ -z ${args['destination']+x} ]]; then
     printf "missing required argument: DESTINATION\nusage: backup unmount DESTINATION\n" >&2
 
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
+    printf "%s\n" "destination must be one of: local, remote" >&2
     exit 1
   fi
 

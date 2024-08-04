@@ -6,13 +6,15 @@ version: "0.1.0"
 	long:  "--dest"
 	short: "-d"
 	arg:   "destination"
-	help:  "Destination repository (s3 or usb)"
+	help:  "Destination repository"
+	allowed: ["local", "remote"]
 }
 
 #DestArg: {
-	help:     "Destination repository (s3 or usb)"
 	name:     "destination"
+	help:     "Destination repository"
 	required: true
+	allowed: ["local", "remote"]
 }
 
 commands: [
@@ -23,7 +25,7 @@ commands: [
 			#DestArg,
 		]
 		examples: [
-			"backup init s3",
+			"backup init remote",
 		]
 	},
 	{
@@ -34,7 +36,7 @@ commands: [
 		]
 		examples: [
 			"backup run",
-			"backup run --dest s3",
+			"backup run --dest remote",
 		]
 	},
 	{
@@ -50,7 +52,7 @@ commands: [
 		]
 		examples: [
 			"backup check",
-			"backup check --dest usb",
+			"backup check --dest local",
 			"backup check --file foo/bar.txt",
 		]
 	},
