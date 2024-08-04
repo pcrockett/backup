@@ -740,14 +740,36 @@ backup_check_command() {
   # shellcheck disable=SC2154
 
   read_config
-  configure_restic "${args[--dest]}"
 
-  if [ "${args[--dest]}" == "local" ]; then
+  configure_and_run() {
+      local dest="${1}"
+      configure_restic "${dest}"
+      restic --verbose check --read-data-subset 100M
+  }
+
+  check_local() {
       mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
       unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
-  fi
+      configure_and_run local
+  }
 
-  restic --verbose check --read-data-subset 100M
+  check_remote() {
+      configure_and_run remote
+  }
+
+  case "${args[--dest]:-}" in
+      local)
+          check_local
+      ;;
+      remote)
+          check_remote
+      ;;
+      *)
+          # no destination specified; run both.
+          check_local
+          check_remote
+      ;;
+  esac
 
 }
 
