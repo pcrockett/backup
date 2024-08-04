@@ -36,7 +36,9 @@ case "${args[destination]:-}" in
     ;;
     *)
         # no destination specified; run both.
-        backup_local
-        backup_remote
+        log:step "Backing up to local..."
+        backup_local | log:indent
+        log:step "Backing up to remote..."
+        backup_remote | log:indent
     ;;
 esac
