@@ -10,7 +10,7 @@ fi
 pid_file="$(mount:pid_file_by_dest "${args[destination]}")"
 pid="$(head --lines 1 "${pid_file}")"
 kill -SIGTERM "${pid}"
-wait_for_process "${pid}"
+process:wait "${pid}"
 
 if [ "${args[destination]}" == "local" ]; then
     config:read

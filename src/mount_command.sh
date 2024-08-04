@@ -24,7 +24,7 @@ echo "${restic_pid}" > "$(mount:pid_file_by_dest "${args[destination]}")"
 # make sure temp files aren't cleaned up before restic starts
 mount:wait "${mount_dir}" "${restic_pid}"
 
-if mount:is_mountpoint "${mount_dir}" && proc_is_running "${restic_pid}"; then
+if mount:is_mountpoint "${mount_dir}" && process:is_running "${restic_pid}"; then
     echo "Repository mounted at ${mount_dir}"
 else
     cat "${restic_output_file}"

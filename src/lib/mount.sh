@@ -29,7 +29,7 @@ mount:wait() {
 
     local MOUNT_TIMEOUT_SECONDS=20
     local iteration_count=0
-    while ! mount:is_mountpoint "${dir_path}" && proc_is_running "${pid}"
+    while ! mount:is_mountpoint "${dir_path}" && process:is_running "${pid}"
     do
         iteration_count=$((iteration_count+1))
 
