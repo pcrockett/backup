@@ -3,10 +3,27 @@
 
 config:read
 
+path_to_check="${args[--file]:-}"
+
+if [ "${path_to_check}" != "" ]; then
+    test -f "${path_to_check}" || panic "${path_to_check} doesn't exist"
+    path_to_check="$(readlink --canonicalize-existing "${path_to_check}")"
+fi
+
 configure_and_run() {
     local dest="${1}"
     config:setup_restic_env "${dest}"
-    restic --verbose check --read-data-subset 100M
+
+    if [ "${path_to_check}" == "" ]; then
+        restic --verbose check --read-data-subset 100M
+    else
+        mount:mount_restic_repo "${dest}"
+        mount_dir="$(mount:mountpoint_for_backup_dest "${dest}")"
+        backup_copy="${mount_dir}/snapshots/latest/${path_to_check}"
+        test -f "${backup_copy}" || panic "Unable to find ${path_to_check} in latest backup snapshot."
+        # TODO: finish verification
+        mount:unmount_restic_repo "${dest}"
+    fi
 }
 
 check_local() {

@@ -136,7 +136,7 @@ backup_check_usage() {
 
     # :command.usage_flags
     # :flag.usage
-    printf "  %s\n" "--file, -f"
+    printf "  %s\n" "--file, -f FILE"
     printf "    Verify a file on your local device matches the backup\n"
     echo
 
@@ -573,6 +573,46 @@ mount:wait() {
     done
 }
 
+mount:mount_restic_repo() {
+    local backup_dest="${1}"
+
+    mount_dir="$(mount:mountpoint_for_backup_dest "${backup_dest}")"
+    util:mkdir_private "${mount_dir}"
+
+    if mount:is_mountpoint "${mount_dir}"; then
+        panic "Already mounted: ${mount_dir}"
+    fi
+
+    restic_output_file="$(util:temp_file)"
+    restic mount "${mount_dir}" > "${restic_output_file}" &
+    restic_pid=${!}
+    echo "${restic_pid}" > "$(mount:pid_file_by_dest "${backup_dest}")"
+
+    mount:wait "${mount_dir}" "${restic_pid}"
+
+    if mount:is_mountpoint "${mount_dir}" && process:is_running "${restic_pid}"; then
+        echo "Repository mounted at ${mount_dir}"
+    else
+        cat "${restic_output_file}"
+        panic "Unable to mount backup repository"
+    fi
+}
+
+mount:unmount_restic_repo() {
+    local backup_dest="${1}"
+    mount_dir="$(mount:mountpoint_for_backup_dest "${backup_dest}")"
+
+    if [ ! -d "${mount_dir}" ] || ! mount:is_mountpoint "${mount_dir}"; then
+        return 0
+    fi
+
+    pid_file="$(mount:pid_file_by_dest "${backup_dest}")"
+    pid="$(head --lines 1 "${pid_file}")"
+    kill -SIGTERM "${pid}"
+    process:wait "${pid}"
+    rm -f "${pid_file}"
+}
+
 # src/lib/process.sh
 # shellcheck shell=bash
 
@@ -747,10 +787,27 @@ backup_check_command() {
 
   config:read
 
+  path_to_check="${args[--file]:-}"
+
+  if [ "${path_to_check}" != "" ]; then
+      test -f "${path_to_check}" || panic "${path_to_check} doesn't exist"
+      path_to_check="$(readlink --canonicalize-existing "${path_to_check}")"
+  fi
+
   configure_and_run() {
       local dest="${1}"
       config:setup_restic_env "${dest}"
-      restic --verbose check --read-data-subset 100M
+
+      if [ "${path_to_check}" == "" ]; then
+          restic --verbose check --read-data-subset 100M
+      else
+          mount:mount_restic_repo "${dest}"
+          mount_dir="$(mount:mountpoint_for_backup_dest "${dest}")"
+          backup_copy="${mount_dir}/snapshots/latest/${path_to_check}"
+          test -f "${backup_copy}" || panic "Unable to find ${path_to_check} in latest backup snapshot."
+          # TODO: finish verification
+          mount:unmount_restic_repo "${dest}"
+      fi
   }
 
   check_local() {
@@ -790,32 +847,11 @@ backup_mount_command() {
   config:read
   config:setup_restic_env "${args[destination]}"
 
-  mount_dir="$(mount:mountpoint_for_backup_dest "${args[destination]}")"
-  util:mkdir_private "${mount_dir}"
-
-  if mount:is_mountpoint "${mount_dir}"; then
-      panic "Already mounted: ${mount_dir}"
-  fi
-
   if [ "${args[destination]}" == "local" ]; then
       local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
   fi
 
-  restic_output_file="$(util:temp_file)"
-
-  restic mount "${mount_dir}" > "${restic_output_file}" &
-  restic_pid=${!}
-  echo "${restic_pid}" > "$(mount:pid_file_by_dest "${args[destination]}")"
-
-  # make sure temp files aren't cleaned up before restic starts
-  mount:wait "${mount_dir}" "${restic_pid}"
-
-  if mount:is_mountpoint "${mount_dir}" && process:is_running "${restic_pid}"; then
-      echo "Repository mounted at ${mount_dir}"
-  else
-      cat "${restic_output_file}"
-      panic "Unable to mount backup repository"
-  fi
+  mount:mount_restic_repo "${args[destination]}"
 
 }
 
@@ -825,23 +861,12 @@ backup_unmount_command() {
   # shellcheck shell=bash
   # shellcheck disable=SC2154
 
-  mount_dir="$(mount:mountpoint_for_backup_dest "${args[destination]}")"
-
-  if [ ! -d "${mount_dir}" ] || ! mount:is_mountpoint "${mount_dir}"; then
-      exit 0
-  fi
-
-  pid_file="$(mount:pid_file_by_dest "${args[destination]}")"
-  pid="$(head --lines 1 "${pid_file}")"
-  kill -SIGTERM "${pid}"
-  process:wait "${pid}"
+  mount:unmount_restic_repo "${args[destination]}"
 
   if [ "${args[destination]}" == "local" ]; then
       config:read
       local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
   fi
-
-  rm -f "${pid_file}"
 
 }
 
@@ -1142,9 +1167,15 @@ backup_check_parse_requirements() {
       # :flag.case
       --file | -f)
 
-        # :flag.case_no_arg
-        args['--file']=1
-        shift
+        # :flag.case_arg
+        if [[ -n ${2+x} ]]; then
+          args['--file']="$2"
+          shift
+          shift
+        else
+          printf "%s\n" "--file requires an argument: --file, -f FILE" >&2
+          exit 1
+        fi
         ;;
 
       -?*)

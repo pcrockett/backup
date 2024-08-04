@@ -46,6 +46,7 @@ commands: [
 			{
 				long:  "--file"
 				short: "-f"
+				arg:   "file"
 				help:  "Verify a file on your local device matches the backup"
 			},
 		]
