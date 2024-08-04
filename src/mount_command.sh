@@ -5,7 +5,7 @@ config:read
 config:setup_restic_env "${args[destination]}"
 
 mount_dir="$(mount:mountpoint_for_backup_dest "${args[destination]}")"
-mkdir_private "${mount_dir}"
+util:mkdir_private "${mount_dir}"
 
 if mount:is_mountpoint "${mount_dir}"; then
     panic "Already mounted: ${mount_dir}"
@@ -15,7 +15,7 @@ if [ "${args[destination]}" == "local" ]; then
     local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
 fi
 
-restic_output_file="$(temp_file)"
+restic_output_file="$(util:temp_file)"
 
 restic mount "${mount_dir}" > "${restic_output_file}" &
 restic_pid=${!}

@@ -19,7 +19,7 @@ mount:pid_file_by_dest() {
     else
         pid_dir="${XDG_STATE_HOME}/backup/pid"
     fi
-    mkdir_private "${pid_dir}"
+    util:mkdir_private "${pid_dir}"
     echo "${pid_dir}/${backup_dest}"
 }
 

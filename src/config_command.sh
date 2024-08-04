@@ -3,7 +3,7 @@
 config_file="$(config:file_path)"
 
 if [ ! -f "${config_file}" ]; then
-    mkdir_private "$(config:directory_path)"
+    util:mkdir_private "$(config:directory_path)"
     config:write_template_to "${config_file}"
 fi
 

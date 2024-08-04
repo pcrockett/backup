@@ -351,7 +351,7 @@ config:read() {
         return
     fi
 
-    mkdir_private "$(config:directory_path)"
+    util:mkdir_private "$(config:directory_path)"
     config:write_template_to "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
@@ -437,59 +437,9 @@ config:setup_restic_env() {
         ;;
     esac
 
-    password_file="$(temp_file)"
+    password_file="$(util:temp_file)"
     echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
     export RESTIC_PASSWORD_FILE="${password_file}"
-}
-
-# src/lib/each.sh
-# shellcheck shell=bash
-
-each() {
-    # iterate through stdin lines, and execute a command for each line.
-    # the stdin line will be passed to the command as the last parameter.
-    #
-    # example usage:
-    #
-    #     printf 'foo\nbar' | each echo "you said: "
-    #
-    # outputs:
-    #
-    #     you said: foo
-    #     you said: bar
-    #
-    while IFS= read -r line || [ -n "${line}" ]
-    do
-        "${@}" "${line}"
-    done < <(cat)
-}
-
-# src/lib/escape_value.sh
-# shellcheck shell=bash
-
-escape_value() {
-    printf '%q' "${1}"
-}
-
-# src/lib/lines.sh
-# shellcheck shell=bash
-
-lines() {
-    # iterate through args, and output each one on a new line.
-    #
-    # example usage:
-    #
-    #     lines a b c
-    #
-    # outputs:
-    #
-    #     a
-    #     b
-    #     c
-    #
-    for i in "${@}"; do
-        echo "${i}"
-    done
 }
 
 # src/lib/local.sh
@@ -512,6 +462,15 @@ _get_device_current_mount_path() {
     findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
 }
 
+_sudo_if_needed() {
+    if [ "$(id --user)" -eq 0 ]; then
+        "${@}"
+    else
+        echo "Running \`sudo ${*}\`..."
+        sudo "${@}"
+    fi
+}
+
 local:device_mount_path_by_uuid() {
     local uuid run_user_dir mount_path
     uuid="${1}"
@@ -521,7 +480,7 @@ local:device_mount_path_by_uuid() {
     else
         mount_path="${XDG_STATE_HOME}/backup/${uuid}"
     fi
-    mkdir_private "${mount_path}"
+    util:mkdir_private "${mount_path}"
     echo "${mount_path}"
 }
 
@@ -532,7 +491,7 @@ local:repo_path_by_uuid() {
 
 _unmount_device_by_uuid() {
     local uuid="${1}"
-    sudo_if_needed umount "$(local:device_mount_path_by_uuid "${uuid}")"
+    _sudo_if_needed umount "$(local:device_mount_path_by_uuid "${uuid}")"
 }
 
 local:mount_device_by_uuid() {
@@ -543,7 +502,7 @@ local:mount_device_by_uuid() {
     desired_mount_path="$(local:device_mount_path_by_uuid "${uuid}")"
     if [ "${current_mount_path}" == "" ]; then
         echo "Mounting ${device_path} to ${desired_mount_path}..."
-        sudo_if_needed mount "${device_path}" "${desired_mount_path}"
+        _sudo_if_needed mount "${device_path}" "${desired_mount_path}"
     elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
         panic "${device_path} is already mounted to ${current_mount_path}"
     fi
@@ -552,7 +511,7 @@ local:mount_device_by_uuid() {
 local:unmount_on_exit() {
     local filesystem_uuid="${1}"
     # shellcheck disable=SC2064  # intentionally expanding this trap string now
-    trap "_unmount_device_by_uuid $(escape_value "${filesystem_uuid}")" EXIT
+    trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")" EXIT
 }
 
 # src/lib/logging.sh
@@ -570,16 +529,6 @@ not_implemented() {
 
 log_info() {
     echo "${*}"
-}
-
-# src/lib/mkdir_private.sh
-# shellcheck shell=bash
-
-mkdir_private() {
-    (
-        umask u=rwx,g=,o=
-        mkdir --parent "${1}"
-    )
 }
 
 # src/lib/mount.sh
@@ -604,7 +553,7 @@ mount:pid_file_by_dest() {
     else
         pid_dir="${XDG_STATE_HOME}/backup/pid"
     fi
-    mkdir_private "${pid_dir}"
+    util:mkdir_private "${pid_dir}"
     echo "${pid_dir}/${backup_dest}"
 }
 
@@ -648,22 +597,39 @@ wait_for_process() {
     done
 }
 
-# src/lib/sudo.sh
+# src/lib/util.sh
 # shellcheck shell=bash
 
-sudo_if_needed() {
-    if [ "$(id --user)" -eq 0 ]; then
-        "${@}"
-    else
-        echo "Running \`sudo ${*}\`..."
-        sudo "${@}"
-    fi
+util:lines() {
+    # iterate through args, and output each one on a new line.
+    #
+    # example usage:
+    #
+    #     util:lines a b c
+    #
+    # outputs:
+    #
+    #     a
+    #     b
+    #     c
+    #
+    for i in "${@}"; do
+        echo "${i}"
+    done
 }
 
-# src/lib/temp_file.sh
-# shellcheck shell=bash
+util:escape_value() {
+    printf '%q' "${1}"
+}
 
-temp_file() {
+util:mkdir_private() {
+    (
+        umask u=rwx,g=,o=
+        mkdir --parent "${1}"
+    )
+}
+
+util:temp_file() {
     # create a temp file in ${BACKUP_TEMP_DIR} and echo its file path to stdout
     # ${BACKUP_TEMP_DIR} will be deleted in [ref:before-hook]
     mktemp --tmpdir="${BACKUP_TEMP_DIR}"
@@ -697,8 +663,8 @@ backup_run_command() {
 
   config:read
 
-  exclude_file="$(temp_file)"
-  lines "${EXCLUDE[@]}" > "${exclude_file}"
+  exclude_file="$(util:temp_file)"
+  util:lines "${EXCLUDE[@]}" > "${exclude_file}"
 
   configure_and_run() {
       local dest="${1}"
@@ -787,7 +753,7 @@ backup_mount_command() {
   config:setup_restic_env "${args[destination]}"
 
   mount_dir="$(mount:mountpoint_for_backup_dest "${args[destination]}")"
-  mkdir_private "${mount_dir}"
+  util:mkdir_private "${mount_dir}"
 
   if mount:is_mountpoint "${mount_dir}"; then
       panic "Already mounted: ${mount_dir}"
@@ -797,7 +763,7 @@ backup_mount_command() {
       local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
   fi
 
-  restic_output_file="$(temp_file)"
+  restic_output_file="$(util:temp_file)"
 
   restic mount "${mount_dir}" > "${restic_output_file}" &
   restic_pid=${!}
@@ -849,7 +815,7 @@ backup_config_command() {
   config_file="$(config:file_path)"
 
   if [ ! -f "${config_file}" ]; then
-      mkdir_private "$(config:directory_path)"
+      util:mkdir_private "$(config:directory_path)"
       config:write_template_to "${config_file}"
   fi
 

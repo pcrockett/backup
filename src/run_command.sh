@@ -3,8 +3,8 @@
 
 config:read
 
-exclude_file="$(temp_file)"
-lines "${EXCLUDE[@]}" > "${exclude_file}"
+exclude_file="$(util:temp_file)"
+util:lines "${EXCLUDE[@]}" > "${exclude_file}"
 
 configure_and_run() {
     local dest="${1}"

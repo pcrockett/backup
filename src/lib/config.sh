@@ -18,7 +18,7 @@ config:read() {
         return
     fi
 
-    mkdir_private "$(config:directory_path)"
+    util:mkdir_private "$(config:directory_path)"
     config:write_template_to "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
@@ -104,7 +104,7 @@ config:setup_restic_env() {
         ;;
     esac
 
-    password_file="$(temp_file)"
+    password_file="$(util:temp_file)"
     echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
     export RESTIC_PASSWORD_FILE="${password_file}"
 }

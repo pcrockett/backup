@@ -17,6 +17,15 @@ _get_device_current_mount_path() {
     findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
 }
 
+_sudo_if_needed() {
+    if [ "$(id --user)" -eq 0 ]; then
+        "${@}"
+    else
+        echo "Running \`sudo ${*}\`..."
+        sudo "${@}"
+    fi
+}
+
 local:device_mount_path_by_uuid() {
     local uuid run_user_dir mount_path
     uuid="${1}"
@@ -26,7 +35,7 @@ local:device_mount_path_by_uuid() {
     else
         mount_path="${XDG_STATE_HOME}/backup/${uuid}"
     fi
-    mkdir_private "${mount_path}"
+    util:mkdir_private "${mount_path}"
     echo "${mount_path}"
 }
 
@@ -37,7 +46,7 @@ local:repo_path_by_uuid() {
 
 _unmount_device_by_uuid() {
     local uuid="${1}"
-    sudo_if_needed umount "$(local:device_mount_path_by_uuid "${uuid}")"
+    _sudo_if_needed umount "$(local:device_mount_path_by_uuid "${uuid}")"
 }
 
 local:mount_device_by_uuid() {
@@ -48,7 +57,7 @@ local:mount_device_by_uuid() {
     desired_mount_path="$(local:device_mount_path_by_uuid "${uuid}")"
     if [ "${current_mount_path}" == "" ]; then
         echo "Mounting ${device_path} to ${desired_mount_path}..."
-        sudo_if_needed mount "${device_path}" "${desired_mount_path}"
+        _sudo_if_needed mount "${device_path}" "${desired_mount_path}"
     elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
         panic "${device_path} is already mounted to ${current_mount_path}"
     fi
@@ -57,5 +66,5 @@ local:mount_device_by_uuid() {
 local:unmount_on_exit() {
     local filesystem_uuid="${1}"
     # shellcheck disable=SC2064  # intentionally expanding this trap string now
-    trap "_unmount_device_by_uuid $(escape_value "${filesystem_uuid}")" EXIT
+    trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")" EXIT
 }
