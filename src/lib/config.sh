@@ -22,11 +22,11 @@ config:read() {
     config:write_template_to "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
-        log_info "template config file generated at:"
-        log_info ""
-        log_info "    ${config_file}"
-        log_info ""
-        log_info "edit this file before continuing"
+        log:info "template config file generated at:"
+        log:info ""
+        log:info "    ${config_file}"
+        log:info ""
+        log:info "edit this file before continuing"
         exit 1
     fi
 

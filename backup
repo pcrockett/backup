@@ -355,11 +355,11 @@ config:read() {
     config:write_template_to "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
-        log_info "template config file generated at:"
-        log_info ""
-        log_info "    ${config_file}"
-        log_info ""
-        log_info "edit this file before continuing"
+        log:info "template config file generated at:"
+        log:info ""
+        log:info "    ${config_file}"
+        log:info ""
+        log:info "edit this file before continuing"
         exit 1
     fi
 
@@ -514,20 +514,10 @@ local:unmount_on_exit() {
     trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")" EXIT
 }
 
-# src/lib/logging.sh
+# src/lib/log.sh
 # shellcheck shell=bash
 
-panic() {
-    # for when you really shouldn't keep calm and carry on
-    echo "FATAL: ${*}" >&2
-    exit 1
-}
-
-not_implemented() {
-    panic "Not implemented yet."
-}
-
-log_info() {
+log:info() {
     echo "${*}"
 }
 
@@ -595,6 +585,21 @@ process:wait() {
             sleep 1
         fi
     done
+}
+
+# src/lib/stdlib.sh
+# shellcheck shell=bash
+
+# I'm calling this my "standard library" -- no namespaces required for these functions
+
+panic() {
+    # for when you really shouldn't keep calm and carry on
+    echo "FATAL: ${*}" >&2
+    exit 1
+}
+
+not_implemented() {
+    panic "Not implemented yet."
 }
 
 # src/lib/util.sh
