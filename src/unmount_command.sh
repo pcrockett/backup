@@ -14,7 +14,7 @@ wait_for_process "${pid}"
 
 if [ "${args[destination]}" == "local" ]; then
     config:read
-    unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+    local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
 fi
 
 rm -f "${pid_file}"

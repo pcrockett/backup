@@ -96,7 +96,7 @@ config:setup_restic_env() {
             export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
         ;;
         local)
-            RESTIC_REPOSITORY="$(get_local_repo_path "${LOCAL_FILESYSTEM_UUID}")"
+            RESTIC_REPOSITORY="$(local:repo_path_by_uuid "${LOCAL_FILESYSTEM_UUID}")"
             export RESTIC_REPOSITORY
         ;;
         *)

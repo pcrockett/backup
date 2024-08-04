@@ -18,8 +18,8 @@ configure_and_run() {
 }
 
 backup_local() {
-    mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
-    unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+    local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+    local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
     configure_and_run local
 }
 

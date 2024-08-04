@@ -12,7 +12,7 @@ if is_mounted "${mount_dir}"; then
 fi
 
 if [ "${args[destination]}" == "local" ]; then
-    mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+    local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
 fi
 
 restic_output_file="$(temp_file)"
