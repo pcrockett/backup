@@ -1,11 +1,11 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2154
 
-read_config
+config:read
 
 configure_and_run() {
     local dest="${1}"
-    configure_restic "${dest}"
+    config:setup_restic_env "${dest}"
     restic --verbose check --read-data-subset 100M
 }
 

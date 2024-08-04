@@ -1,16 +1,16 @@
 # shellcheck shell=bash
 
-config_dir() {
+config:directory_path() {
     echo "${XDG_CONFIG_HOME:-${HOME}/.config}/backup"
 }
 
-config_path() {
-    echo "$(config_dir)/config.sh"
+config:file_path() {
+    echo "$(config:directory_path)/config.sh"
 }
 
-read_config() {
+config:read() {
     local config_file
-    config_file="$(config_path)"
+    config_file="$(config:file_path)"
 
     if [ -f "${config_file}" ]; then
         # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
@@ -18,8 +18,8 @@ read_config() {
         return
     fi
 
-    mkdir_private "$(config_dir)"
-    write_config_template "${config_file}"
+    mkdir_private "$(config:directory_path)"
+    config:write_template_to "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
         log_info "template config file generated at:"
@@ -35,7 +35,7 @@ read_config() {
     source "${config_file}"
 }
 
-write_config_template() {
+config:write_template_to() {
     cat > "${1}" <<EOF
 # shellcheck shell=bash
 #
@@ -86,7 +86,7 @@ EXCLUDE=(
 EOF
 }
 
-configure_restic() {
+config:setup_restic_env() {
     local backup_dest="${1}"
 
     case "${backup_dest}" in

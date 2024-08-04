@@ -1,10 +1,10 @@
 # shellcheck shell=bash
 
-config_file="$(config_path)"
+config_file="$(config:file_path)"
 
 if [ ! -f "${config_file}" ]; then
-    mkdir_private "$(config_dir)"
-    write_config_template "${config_file}"
+    mkdir_private "$(config:directory_path)"
+    config:write_template_to "${config_file}"
 fi
 
 display_config() {

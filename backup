@@ -333,17 +333,17 @@ inspect_args() {
 # src/lib/config.sh
 # shellcheck shell=bash
 
-config_dir() {
+config:directory_path() {
     echo "${XDG_CONFIG_HOME:-${HOME}/.config}/backup"
 }
 
-config_path() {
-    echo "$(config_dir)/config.sh"
+config:file_path() {
+    echo "$(config:directory_path)/config.sh"
 }
 
-read_config() {
+config:read() {
     local config_file
-    config_file="$(config_path)"
+    config_file="$(config:file_path)"
 
     if [ -f "${config_file}" ]; then
         # shellcheck disable=SC1090  # shellcheck shouldn't lint this file
@@ -351,8 +351,8 @@ read_config() {
         return
     fi
 
-    mkdir_private "$(config_dir)"
-    write_config_template "${config_file}"
+    mkdir_private "$(config:directory_path)"
+    config:write_template_to "${config_file}"
 
     if [ "${EDITOR:-}" = "" ]; then
         log_info "template config file generated at:"
@@ -368,7 +368,7 @@ read_config() {
     source "${config_file}"
 }
 
-write_config_template() {
+config:write_template_to() {
     cat > "${1}" <<EOF
 # shellcheck shell=bash
 #
@@ -419,7 +419,7 @@ EXCLUDE=(
 EOF
 }
 
-configure_restic() {
+config:setup_restic_env() {
     local backup_dest="${1}"
 
     case "${backup_dest}" in
@@ -679,8 +679,8 @@ backup_init_command() {
   # shellcheck shell=bash
   # shellcheck disable=SC2154
 
-  read_config
-  configure_restic "${args[destination]}"
+  config:read
+  config:setup_restic_env "${args[destination]}"
 
   if [ "${args[destination]}" == "local" ]; then
       mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
@@ -698,14 +698,14 @@ backup_run_command() {
   # shellcheck shell=bash
   # shellcheck disable=SC2154
 
-  read_config
+  config:read
 
   exclude_file="$(temp_file)"
   lines "${EXCLUDE[@]}" > "${exclude_file}"
 
   configure_and_run() {
       local dest="${1}"
-      configure_restic "${dest}"
+      config:setup_restic_env "${dest}"
 
       restic --verbose backup \
           --exclude-caches \
@@ -746,11 +746,11 @@ backup_check_command() {
   # shellcheck shell=bash
   # shellcheck disable=SC2154
 
-  read_config
+  config:read
 
   configure_and_run() {
       local dest="${1}"
-      configure_restic "${dest}"
+      config:setup_restic_env "${dest}"
       restic --verbose check --read-data-subset 100M
   }
 
@@ -786,8 +786,8 @@ backup_mount_command() {
   # shellcheck shell=bash
   # shellcheck disable=SC2154
 
-  read_config
-  configure_restic "${args[destination]}"
+  config:read
+  config:setup_restic_env "${args[destination]}"
 
   mount_dir="$(get_mount_dir "${args[destination]}")"
   mkdir_private "${mount_dir}"
@@ -836,7 +836,7 @@ backup_unmount_command() {
   wait_for_process "${pid}"
 
   if [ "${args[destination]}" == "local" ]; then
-      read_config
+      config:read
       unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
   fi
 
@@ -849,11 +849,11 @@ backup_config_command() {
   # src/config_command.sh
   # shellcheck shell=bash
 
-  config_file="$(config_path)"
+  config_file="$(config:file_path)"
 
   if [ ! -f "${config_file}" ]; then
-      mkdir_private "$(config_dir)"
-      write_config_template "${config_file}"
+      mkdir_private "$(config:directory_path)"
+      config:write_template_to "${config_file}"
   fi
 
   display_config() {

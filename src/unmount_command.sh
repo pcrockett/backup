@@ -13,7 +13,7 @@ kill -SIGTERM "${pid}"
 wait_for_process "${pid}"
 
 if [ "${args[destination]}" == "local" ]; then
-    read_config
+    config:read
     unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
 fi
 

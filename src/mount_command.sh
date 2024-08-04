@@ -1,8 +1,8 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2154
 
-read_config
-configure_restic "${args[destination]}"
+config:read
+config:setup_restic_env "${args[destination]}"
 
 mount_dir="$(get_mount_dir "${args[destination]}")"
 mkdir_private "${mount_dir}"
