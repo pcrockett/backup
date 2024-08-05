@@ -4,6 +4,14 @@ log:info() {
     echo "${*}"
 }
 
+log:success() {
+    green "${*}\n"
+}
+
+log:error() {
+    red "${*}\n"
+}
+
 log:step() {
     cyan "--> ${*}\n"
 }

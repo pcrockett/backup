@@ -34,3 +34,7 @@ util:temp_file() {
     # ${BACKUP_TEMP_DIR} will be deleted in [ref:before-hook]
     mktemp --tmpdir="${BACKUP_TEMP_DIR}"
 }
+
+util:sha256sum() {
+    sha256sum "${1}" | awk '{print $1}'
+}

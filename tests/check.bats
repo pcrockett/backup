@@ -17,11 +17,13 @@ source tests/util.sh
     assert_stdout 'check all packs'
     assert_stdout 'check snapshots, trees and blobs'
     assert_stdout 'no errors were found'
+    assert_stdout 'OK: No errors encountered\.'
     assert_exit_code 0
 }
 
 @test 'check - bucket not initialized - fails' {
     capture_output backup check remote
     assert_stderr 'Is there a repository at the following location\?'
-    assert_exit_code 10
+    assert_stdout 'remote backup destination encountered an error\.'
+    assert_exit_code 1
 }

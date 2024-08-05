@@ -442,6 +442,52 @@ config:setup_restic_env() {
     export RESTIC_PASSWORD_FILE="${password_file}"
 }
 
+# src/lib/hash.sh
+# shellcheck shell=bash
+
+hash:get_file_hash() {
+    # given a backup destination and file path within the backup, gets the hash of
+    # the file from the latest snapshot.
+    #
+    # generates a lot of stdout; actual result is saved in `FILE_HASH` env variable
+    #
+    local backup_dest="${1}"
+    local file_path="${2}"
+    local restic_pid=0
+    local mount_dir restic_output_file pid_file
+
+    mount_dir="$(mount:mountpoint_for_backup_dest "${backup_dest}")"
+    util:mkdir_private "${mount_dir}"
+
+    pid_file="$(mount:pid_file_by_dest "${backup_dest}")"
+
+    if ! mount:is_mountpoint "${mount_dir}" || ! mount:process_is_running "${backup_dest}"; then
+        restic_output_file="$(util:temp_file)"
+        restic mount "${mount_dir}" > "${restic_output_file}" &
+        restic_pid=${!}
+        echo "${restic_pid}" > "${pid_file}"
+        mount:wait "${mount_dir}" "${restic_pid}"
+
+        if mount:is_mountpoint "${mount_dir}" && process:is_running "${restic_pid}"; then
+            echo "Repository mounted at ${mount_dir}"
+        else
+            cat "${restic_output_file}"
+            panic "Unable to mount backup repository"
+        fi
+    fi
+
+    local backup_file_path="${mount_dir}/snapshots/latest${file_path}"
+    test -f "${backup_file_path}" || panic "${file_path} does not exist in latest snapshot."
+    FILE_HASH="$(util:sha256sum "${backup_file_path}")"
+    export FILE_HASH
+
+    if [ ${restic_pid} -ne 0 ]; then
+        kill -SIGTERM "${restic_pid}"
+        process:wait "${restic_pid}"
+        rm -f "${pid_file}"
+    fi
+}
+
 # src/lib/local.sh
 # shellcheck shell=bash
 
@@ -521,6 +567,14 @@ log:info() {
     echo "${*}"
 }
 
+log:success() {
+    green "${*}\n"
+}
+
+log:error() {
+    red "${*}\n"
+}
+
 log:step() {
     cyan "--> ${*}\n"
 }
@@ -555,6 +609,17 @@ mount:pid_file_by_dest() {
     echo "${pid_dir}/${backup_dest}"
 }
 
+mount:process_is_running() {
+    local backup_dest="${1}"
+    local pid_file pid
+    pid_file="$(mount:pid_file_by_dest "${backup_dest}")"
+    if [ ! -f "${pid_file}" ]; then
+        return 1
+    fi
+    pid="$(head -n 1 "${pid_file}")"
+    process:is_running "${pid}"
+}
+
 mount:wait() {
     local dir_path="${1}"
     local pid="${2}"
@@ -571,46 +636,6 @@ mount:wait() {
             sleep 1
         fi
     done
-}
-
-mount:mount_restic_repo() {
-    local backup_dest="${1}"
-
-    mount_dir="$(mount:mountpoint_for_backup_dest "${backup_dest}")"
-    util:mkdir_private "${mount_dir}"
-
-    if mount:is_mountpoint "${mount_dir}"; then
-        panic "Already mounted: ${mount_dir}"
-    fi
-
-    restic_output_file="$(util:temp_file)"
-    restic mount "${mount_dir}" > "${restic_output_file}" &
-    restic_pid=${!}
-    echo "${restic_pid}" > "$(mount:pid_file_by_dest "${backup_dest}")"
-
-    mount:wait "${mount_dir}" "${restic_pid}"
-
-    if mount:is_mountpoint "${mount_dir}" && process:is_running "${restic_pid}"; then
-        echo "Repository mounted at ${mount_dir}"
-    else
-        cat "${restic_output_file}"
-        panic "Unable to mount backup repository"
-    fi
-}
-
-mount:unmount_restic_repo() {
-    local backup_dest="${1}"
-    mount_dir="$(mount:mountpoint_for_backup_dest "${backup_dest}")"
-
-    if [ ! -d "${mount_dir}" ] || ! mount:is_mountpoint "${mount_dir}"; then
-        return 0
-    fi
-
-    pid_file="$(mount:pid_file_by_dest "${backup_dest}")"
-    pid="$(head --lines 1 "${pid_file}")"
-    kill -SIGTERM "${pid}"
-    process:wait "${pid}"
-    rm -f "${pid_file}"
 }
 
 # src/lib/process.sh
@@ -709,6 +734,10 @@ util:temp_file() {
     mktemp --tmpdir="${BACKUP_TEMP_DIR}"
 }
 
+util:sha256sum() {
+    sha256sum "${1}" | awk '{print $1}'
+}
+
 # :command.command_functions
 # :command.function
 backup_init_command() {
@@ -788,10 +817,13 @@ backup_check_command() {
   config:read
 
   path_to_check="${args[--file]:-}"
+  check_failures=()
 
   if [ "${path_to_check}" != "" ]; then
       test -f "${path_to_check}" || panic "${path_to_check} doesn't exist"
       path_to_check="$(readlink --canonicalize-existing "${path_to_check}")"
+      original_hash="$(util:sha256sum "${path_to_check}")"
+      log:info "Original file hash: ${original_hash}"
   fi
 
   configure_and_run() {
@@ -799,14 +831,17 @@ backup_check_command() {
       config:setup_restic_env "${dest}"
 
       if [ "${path_to_check}" == "" ]; then
-          restic --verbose check --read-data-subset 100M
+          if ! restic --verbose check --read-data-subset 100M; then
+              check_failures+=("${dest} backup destination encountered an error.")
+          fi
       else
-          mount:mount_restic_repo "${dest}"
-          mount_dir="$(mount:mountpoint_for_backup_dest "${dest}")"
-          backup_copy="${mount_dir}/snapshots/latest/${path_to_check}"
-          test -f "${backup_copy}" || panic "Unable to find ${path_to_check} in latest backup snapshot."
-          # TODO: finish verification
-          mount:unmount_restic_repo "${dest}"
+          hash:get_file_hash "${dest}" "${path_to_check}"
+          if [ "${original_hash}" == "${FILE_HASH}" ]; then
+              log:success "${dest} OK: ${FILE_HASH}"
+          else
+              log:error "${dest} FAIL: ${FILE_HASH}"
+              check_failures+=("${dest} file hash does not match original.")
+          fi
       fi
   }
 
@@ -836,6 +871,15 @@ backup_check_command() {
       ;;
   esac
 
+  if [ "${#check_failures[@]}" -gt 0 ]; then
+      for failure in "${check_failures[@]}"; do
+          log:error "${failure}"
+      done
+      exit 1
+  else
+      log:success "OK: No errors encountered."
+  fi
+
 }
 
 # :command.function
@@ -851,7 +895,26 @@ backup_mount_command() {
       local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
   fi
 
-  mount:mount_restic_repo "${args[destination]}"
+  mount_dir="$(mount:mountpoint_for_backup_dest "${args[destination]}")"
+  util:mkdir_private "${mount_dir}"
+
+  if mount:is_mountpoint "${mount_dir}"; then
+      panic "Already mounted: ${mount_dir}"
+  fi
+
+  restic_output_file="$(util:temp_file)"
+  restic mount "${mount_dir}" > "${restic_output_file}" &
+  restic_pid=${!}
+  echo "${restic_pid}" > "$(mount:pid_file_by_dest "${args[destination]}")"
+
+  mount:wait "${mount_dir}" "${restic_pid}"
+
+  if mount:is_mountpoint "${mount_dir}" && process:is_running "${restic_pid}"; then
+      echo "Repository mounted at ${mount_dir}"
+  else
+      cat "${restic_output_file}"
+      panic "Unable to mount backup repository"
+  fi
 
 }
 
@@ -861,7 +924,17 @@ backup_unmount_command() {
   # shellcheck shell=bash
   # shellcheck disable=SC2154
 
-  mount:unmount_restic_repo "${args[destination]}"
+  mount_dir="$(mount:mountpoint_for_backup_dest "${args[destination]}")"
+
+  if [ ! -d "${mount_dir}" ] || ! mount:is_mountpoint "${mount_dir}"; then
+      return 0
+  fi
+
+  pid_file="$(mount:pid_file_by_dest "${args[destination]}")"
+  pid="$(head --lines 1 "${pid_file}")"
+  kill -SIGTERM "${pid}"
+  process:wait "${pid}"
+  rm -f "${pid_file}"
 
   if [ "${args[destination]}" == "local" ]; then
       config:read
