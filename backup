@@ -610,10 +610,6 @@ log:step() {
     log:cyan "--> ${*}\n"
 }
 
-log:indent() {
-    sed 's/^/    /'
-}
-
 _output_is_tty() { [[ -t 1 ]]; }
 
 _print_formatted() {
@@ -825,9 +821,9 @@ backup_run_command() {
       *)
           # no destination specified; run both.
           log:step "Backing up to local..."
-          backup_local | log:indent
+          backup_local
           log:step "Backing up to remote..."
-          backup_remote | log:indent
+          backup_remote
       ;;
   esac
 
@@ -890,9 +886,9 @@ backup_check_command() {
       *)
           # no destination specified; run both.
           log:step "Checking local..."
-          check_local | log:indent
+          check_local
           log:step "Checking remote..."
-          check_remote | log:indent
+          check_remote
       ;;
   esac
 

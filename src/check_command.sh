@@ -52,9 +52,9 @@ case "${args[destination]:-}" in
     *)
         # no destination specified; run both.
         log:step "Checking local..."
-        check_local | log:indent
+        check_local
         log:step "Checking remote..."
-        check_remote | log:indent
+        check_remote
     ;;
 esac
 

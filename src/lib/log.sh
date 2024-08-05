@@ -16,10 +16,6 @@ log:step() {
     log:cyan "--> ${*}\n"
 }
 
-log:indent() {
-    sed 's/^/    /'
-}
-
 _output_is_tty() { [[ -t 1 ]]; }
 
 _print_formatted() {
