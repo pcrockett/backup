@@ -416,6 +416,7 @@ S3_REPOSITORY_URL="s3:https://example.com/bucket-name"
 
 # Local (ex: USB) backup destination config
 LOCAL_FILESYSTEM_UUID="Find this with the \`blkid\` command"
+LOCAL_BACKUP_DIR="restic-backup"  # save on the local filesystem under restic-backup/ directory
 
 BACKUP_PATHS=(
     "${HOME}"
@@ -460,7 +461,7 @@ config:setup_restic_env() {
             export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
         ;;
         local)
-            RESTIC_REPOSITORY="$(local:repo_path_by_uuid "${LOCAL_FILESYSTEM_UUID}")"
+            RESTIC_REPOSITORY="$(local:repo_path_by_uuid "${LOCAL_FILESYSTEM_UUID}" "${LOCAL_BACKUP_DIR}")"
             export RESTIC_REPOSITORY
         ;;
         *)
@@ -563,7 +564,8 @@ local:device_mount_path_by_uuid() {
 
 local:repo_path_by_uuid() {
     local uuid="${1}"
-    echo "$(local:device_mount_path_by_uuid "${uuid}")/repo"
+    local backup_subdir="${2}"
+    echo "$(local:device_mount_path_by_uuid "${uuid}")/${backup_subdir}"
 }
 
 _unmount_device_by_uuid() {

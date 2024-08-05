@@ -41,7 +41,8 @@ local:device_mount_path_by_uuid() {
 
 local:repo_path_by_uuid() {
     local uuid="${1}"
-    echo "$(local:device_mount_path_by_uuid "${uuid}")/repo"
+    local backup_subdir="${2}"
+    echo "$(local:device_mount_path_by_uuid "${uuid}")/${backup_subdir}"
 }
 
 _unmount_device_by_uuid() {
