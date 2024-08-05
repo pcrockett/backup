@@ -75,6 +75,13 @@ commands: [
 		]
 	},
 	{
+		name: "unlock"
+		help: "Remove a stale lock from a backup repository"
+		args: [
+			#DestRequiredArg,
+		]
+	},
+	{
 		name: "config"
 		help: "View or edit your backup config"
 		flags: [

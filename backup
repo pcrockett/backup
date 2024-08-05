@@ -31,6 +31,7 @@ backup_usage() {
   printf "  %s   Check your backup repository for errors\n" "check  "
   printf "  %s   Mount your backup repository\n" "mount  "
   printf "  %s   Unmount your backup repository\n" "unmount"
+  printf "  %s   Remove a stale lock from a backup repository\n" "unlock "
   printf "  %s   View or edit your backup config\n" "config "
   echo
 
@@ -202,6 +203,36 @@ backup_unmount_usage() {
   printf "%s\n" "Usage:"
   printf "  backup unmount DESTINATION\n"
   printf "  backup unmount --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "Options:"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "Arguments:"
+
+    # :argument.usage
+    printf "  %s\n" "DESTINATION"
+    printf "    Destination repository\n"
+    printf "    Allowed: local, remote\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+backup_unlock_usage() {
+  printf "backup unlock - Remove a stale lock from a backup repository\n\n"
+
+  printf "%s\n" "Usage:"
+  printf "  backup unlock DESTINATION\n"
+  printf "  backup unlock --help | -h\n"
   echo
 
   # :command.long_usage
@@ -944,6 +975,24 @@ backup_unmount_command() {
 }
 
 # :command.function
+backup_unlock_command() {
+  # src/unlock_command.sh
+  # shellcheck shell=bash
+  # shellcheck disable=SC2154
+
+  config:read
+
+  if [ "${args[destination]}" == "local" ]; then
+      local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+      local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+  fi
+
+  config:setup_restic_env "${args[destination]}"
+  restic unlock
+
+}
+
+# :command.function
 backup_config_command() {
   # src/config_command.sh
   # shellcheck shell=bash
@@ -1047,6 +1096,13 @@ parse_requirements() {
       action="unmount"
       shift
       backup_unmount_parse_requirements "$@"
+      shift $#
+      ;;
+
+    unlock)
+      action="unlock"
+      shift
+      backup_unlock_parse_requirements "$@"
       shift $#
       ;;
 
@@ -1408,6 +1464,69 @@ backup_unmount_parse_requirements() {
 }
 
 # :command.parse_requirements
+backup_unlock_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        backup_unlock_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="unlock"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        # :argument.case
+        if [[ -z ${args['destination']+x} ]]; then
+          args['destination']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args['destination']+x} ]]; then
+    printf "missing required argument: DESTINATION\nusage: backup unlock DESTINATION\n" >&2
+
+    exit 1
+  fi
+
+  # :command.whitelist_filter
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
+    printf "%s\n" "destination must be one of: local, remote" >&2
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
 backup_config_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
@@ -1507,6 +1626,7 @@ run() {
     "check") backup_check_command ;;
     "mount") backup_mount_command ;;
     "unmount") backup_unmount_command ;;
+    "unlock") backup_unlock_command ;;
     "config") backup_config_command ;;
   esac
 }
