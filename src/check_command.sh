@@ -10,7 +10,7 @@ if [ "${path_to_check}" != "" ]; then
     test -f "${path_to_check}" || panic "${path_to_check} doesn't exist"
     path_to_check="$(readlink --canonicalize-existing "${path_to_check}")"
     original_hash="$(util:sha256sum "${path_to_check}")"
-    log:info "Original file hash: ${original_hash}"
+    log:magenta "Original file hash: ${original_hash}\n"
 fi
 
 configure_and_run() {
