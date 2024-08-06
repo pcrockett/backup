@@ -16,6 +16,10 @@ install: backup
 	cp backup ~/.local/bin
 .PHONY: install
 
+install_global: backup
+	sudo install backup /usr/local/bin/
+.PHONY: install_global
+
 compose_up: tests/docker-compose.yml
 	docker compose --file tests/docker-compose.yml up --wait
 .PHONY: compose_up
