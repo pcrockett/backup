@@ -13,7 +13,7 @@ kill -SIGTERM "${pid}"
 process:wait "${pid}"
 rm -f "${pid_file}"
 
-if [ "${args[destination]}" == "local" ]; then
+if [ "${args[destination]}" == "${EXTERNAL_BACKUP_DEST}" ]; then
     config:read
-    local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+    external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
 fi

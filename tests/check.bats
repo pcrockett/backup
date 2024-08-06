@@ -3,16 +3,16 @@
 source tests/util.sh
 
 @test 'check - no snapshots yet - fails' {
-    backup init remote
-    capture_output backup check remote
+    backup init offsite
+    capture_output backup check offsite
     assert_stderr 'Fatal: Cannot read from a repository having size 0'
     assert_exit_code 1
 }
 
 @test 'check - snapshot exists - succeeds' {
-    backup init remote
-    backup run remote
-    capture_output backup check remote
+    backup init offsite
+    backup run offsite
+    capture_output backup check offsite
     assert_no_stderr
     assert_stdout 'check all packs'
     assert_stdout 'check snapshots, trees and blobs'
@@ -22,8 +22,8 @@ source tests/util.sh
 }
 
 @test 'check - bucket not initialized - fails' {
-    capture_output backup check remote
+    capture_output backup check offsite
     assert_stderr 'Is there a repository at the following location\?'
-    assert_stdout 'remote backup destination encountered an error\.'
+    assert_stdout 'offsite backup destination encountered an error\.'
     assert_exit_code 1
 }

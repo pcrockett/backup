@@ -4,8 +4,8 @@
 config:read
 config:setup_restic_env "${args[destination]}"
 
-if [ "${args[destination]}" == "local" ]; then
-    local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+if [ "${args[destination]}" == "${EXTERNAL_BACKUP_DEST}" ]; then
+    external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
 fi
 
 mount_dir="$(mount:mountpoint_for_backup_dest "${args[destination]}")"

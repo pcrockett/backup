@@ -2,18 +2,21 @@ name:    "backup"
 help:    "A very opinionated backup tool"
 version: "0.1.0"
 
+#External: "external"
+#Offsite:  "offsite"
+
 #DestOptionalArg: {
 	name:     "destination"
 	help:     "Destination repository"
 	required: false
-	allowed: ["local", "remote"]
+	allowed: [#External, #Offsite]
 }
 
 #DestRequiredArg: {
 	name:     "destination"
 	help:     "Destination repository"
 	required: true
-	allowed: ["local", "remote"]
+	allowed: [#External, #Offsite]
 }
 
 commands: [
@@ -24,7 +27,7 @@ commands: [
 			#DestRequiredArg,
 		]
 		examples: [
-			"backup init remote",
+			"backup init \(#Offsite)",
 		]
 	},
 	{
@@ -35,8 +38,8 @@ commands: [
 		]
 		examples: [
 			"backup run",
-			"backup run local",
-			"backup run remote",
+			"backup run \(#External)",
+			"backup run \(#Offsite)",
 		]
 	},
 	{
@@ -47,7 +50,7 @@ commands: [
 				long:  "--file"
 				short: "-f"
 				arg:   "file"
-				help:  "Verify a file on your local device matches the backup"
+				help:  "Verify a file on your device matches the backup"
 			},
 		]
 		args: [
@@ -55,9 +58,9 @@ commands: [
 		]
 		examples: [
 			"backup check",
-			"backup check local",
+			"backup check \(#External)",
 			"backup check --file foo/bar.txt",
-			"backup check remote --file foo/bar.txt",
+			"backup check \(#Offsite) --file foo/bar.txt",
 		]
 	},
 	{

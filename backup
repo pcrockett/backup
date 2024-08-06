@@ -74,12 +74,12 @@ backup_init_usage() {
     # :argument.usage
     printf "  %s\n" "DESTINATION"
     printf "    Destination repository\n"
-    printf "    Allowed: local, remote\n"
+    printf "    Allowed: external, offsite\n"
     echo
 
     # :command.usage_examples
     printf "%s\n" "Examples:"
-    printf "  backup init remote\n"
+    printf "  backup init offsite\n"
     echo
 
   fi
@@ -109,14 +109,14 @@ backup_run_usage() {
     # :argument.usage
     printf "  %s\n" "DESTINATION"
     printf "    Destination repository\n"
-    printf "    Allowed: local, remote\n"
+    printf "    Allowed: external, offsite\n"
     echo
 
     # :command.usage_examples
     printf "%s\n" "Examples:"
     printf "  backup run\n"
-    printf "  backup run local\n"
-    printf "  backup run remote\n"
+    printf "  backup run external\n"
+    printf "  backup run offsite\n"
     echo
 
   fi
@@ -138,7 +138,7 @@ backup_check_usage() {
     # :command.usage_flags
     # :flag.usage
     printf "  %s\n" "--file, -f FILE"
-    printf "    Verify a file on your local device matches the backup\n"
+    printf "    Verify a file on your device matches the backup\n"
     echo
 
     # :command.usage_fixed_flags
@@ -152,15 +152,15 @@ backup_check_usage() {
     # :argument.usage
     printf "  %s\n" "DESTINATION"
     printf "    Destination repository\n"
-    printf "    Allowed: local, remote\n"
+    printf "    Allowed: external, offsite\n"
     echo
 
     # :command.usage_examples
     printf "%s\n" "Examples:"
     printf "  backup check\n"
-    printf "  backup check local\n"
+    printf "  backup check external\n"
     printf "  backup check --file foo/bar.txt\n"
-    printf "  backup check remote --file foo/bar.txt\n"
+    printf "  backup check offsite --file foo/bar.txt\n"
     echo
 
   fi
@@ -190,7 +190,7 @@ backup_mount_usage() {
     # :argument.usage
     printf "  %s\n" "DESTINATION"
     printf "    Destination repository\n"
-    printf "    Allowed: local, remote\n"
+    printf "    Allowed: external, offsite\n"
     echo
 
   fi
@@ -220,7 +220,7 @@ backup_unmount_usage() {
     # :argument.usage
     printf "  %s\n" "DESTINATION"
     printf "    Destination repository\n"
-    printf "    Allowed: local, remote\n"
+    printf "    Allowed: external, offsite\n"
     echo
 
   fi
@@ -250,7 +250,7 @@ backup_unlock_usage() {
     # :argument.usage
     printf "  %s\n" "DESTINATION"
     printf "    Destination repository\n"
-    printf "    Allowed: local, remote\n"
+    printf "    Allowed: external, offsite\n"
     echo
 
   fi
@@ -409,14 +409,14 @@ config:write_template_to() {
 
 RESTIC_E2EE_PASSWORD="TODO"
 
-# Remote (S3-compatible) backup destination config
+# Offsite (S3-compatible) backup destination config
 AWS_ACCESS_KEY_ID="TODO"
 AWS_SECRET_ACCESS_KEY="TODO"
 S3_REPOSITORY_URL="s3:https://example.com/bucket-name"
 
-# Local (ex: USB) backup destination config
-LOCAL_FILESYSTEM_UUID="Find this with the \`blkid\` command"
-LOCAL_BACKUP_DIR="restic-backup"  # save on the local filesystem under restic-backup/ directory
+# External (ex: USB drive) backup destination config
+EXTERNAL_FILESYSTEM_UUID="Find this with the \`blkid\` command"
+EXTERNAL_BACKUP_DIR="restic-backup"  # save on the external filesystem under restic-backup/ directory
 
 BACKUP_PATHS=(
     "${HOME}"
@@ -455,13 +455,13 @@ config:setup_restic_env() {
     local backup_dest="${1}"
 
     case "${backup_dest}" in
-        remote)
+        "${OFFSITE_BACKUP_DEST}")
             export AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY
             export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
         ;;
-        local)
-            RESTIC_REPOSITORY="$(local:repo_path_by_uuid "${LOCAL_FILESYSTEM_UUID}" "${LOCAL_BACKUP_DIR}")"
+        "${EXTERNAL_BACKUP_DEST}")
+            RESTIC_REPOSITORY="$(external:repo_path_by_uuid "${EXTERNAL_FILESYSTEM_UUID}" "${EXTERNAL_BACKUP_DIR}")"
             export RESTIC_REPOSITORY
         ;;
         *)
@@ -472,6 +472,80 @@ config:setup_restic_env() {
     password_file="$(util:temp_file)"
     echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
     export RESTIC_PASSWORD_FILE="${password_file}"
+}
+
+# src/lib/external.sh
+# shellcheck shell=bash
+
+_device_path_by_uuid() {
+    # get the filesystem location of a device by UUID
+    local uuid="${1}"
+    blkid --uuid "${uuid}" || panic "Unable to get device path for UUID ${uuid}"
+}
+
+_get_device_current_mount_path() {
+    # get the filesystem location where a device is mounted
+    #
+    # accepts single parameter: either the device path itself, or the (suspected)
+    # mount directory path
+    #
+    # writes nothing to stdout if the device isn't mounted
+    local device_or_mount_path="${1}"
+    findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
+}
+
+_sudo_if_needed() {
+    if [ "$(id --user)" -eq 0 ]; then
+        "${@}"
+    else
+        echo "Running \`sudo ${*}\`..."
+        sudo "${@}"
+    fi
+}
+
+external:device_mount_path_by_uuid() {
+    local uuid run_user_dir mount_path
+    uuid="${1}"
+    run_user_dir="/run/user/$(id --user)"
+    if [ -d "${run_user_dir}" ]; then
+        mount_path="${run_user_dir}/backup/${uuid}"
+    else
+        mount_path="${XDG_STATE_HOME}/backup/${uuid}"
+    fi
+    util:mkdir_private "${mount_path}"
+    echo "${mount_path}"
+}
+
+external:repo_path_by_uuid() {
+    local uuid="${1}"
+    local backup_subdir="${2}"
+    echo "$(external:device_mount_path_by_uuid "${uuid}")/${backup_subdir}"
+}
+
+_unmount_device_by_uuid() {
+    local uuid="${1}"
+    _sudo_if_needed umount "$(external:device_mount_path_by_uuid "${uuid}")"
+}
+
+external:mount_device_by_uuid() {
+    local uuid device_path current_mount_path desired_mount_path
+    uuid="${1}"
+    device_path="$(_device_path_by_uuid "${uuid}")"
+    current_mount_path="$(_get_device_current_mount_path "${device_path}")"
+    desired_mount_path="$(external:device_mount_path_by_uuid "${uuid}")"
+    if [ "${current_mount_path}" == "" ]; then
+        echo "Mounting ${device_path} to ${desired_mount_path}..."
+        _sudo_if_needed mount "${device_path}" "${desired_mount_path}"
+    elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
+        panic "${device_path} is already mounted to ${current_mount_path}"
+    fi
+}
+
+external:unmount_on_exit() {
+    # TODO: BUG: this overwrites another very important trap. 😢
+    local filesystem_uuid="${1}"
+    # shellcheck disable=SC2064  # intentionally expanding this trap string now
+    trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")" EXIT
 }
 
 # src/lib/hash.sh
@@ -518,79 +592,6 @@ hash:get_file_hash() {
         process:wait "${restic_pid}"
         rm -f "${pid_file}"
     fi
-}
-
-# src/lib/local.sh
-# shellcheck shell=bash
-
-_device_path_by_uuid() {
-    # get the filesystem location of a device by UUID
-    local uuid="${1}"
-    blkid --uuid "${uuid}" || panic "Unable to get device path for UUID ${uuid}"
-}
-
-_get_device_current_mount_path() {
-    # get the filesystem location where a device is mounted
-    #
-    # accepts single parameter: either the device path itself, or the (suspected)
-    # mount directory path
-    #
-    # writes nothing to stdout if the device isn't mounted
-    local device_or_mount_path="${1}"
-    findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
-}
-
-_sudo_if_needed() {
-    if [ "$(id --user)" -eq 0 ]; then
-        "${@}"
-    else
-        echo "Running \`sudo ${*}\`..."
-        sudo "${@}"
-    fi
-}
-
-local:device_mount_path_by_uuid() {
-    local uuid run_user_dir mount_path
-    uuid="${1}"
-    run_user_dir="/run/user/$(id --user)"
-    if [ -d "${run_user_dir}" ]; then
-        mount_path="${run_user_dir}/backup/${uuid}"
-    else
-        mount_path="${XDG_STATE_HOME}/backup/${uuid}"
-    fi
-    util:mkdir_private "${mount_path}"
-    echo "${mount_path}"
-}
-
-local:repo_path_by_uuid() {
-    local uuid="${1}"
-    local backup_subdir="${2}"
-    echo "$(local:device_mount_path_by_uuid "${uuid}")/${backup_subdir}"
-}
-
-_unmount_device_by_uuid() {
-    local uuid="${1}"
-    _sudo_if_needed umount "$(local:device_mount_path_by_uuid "${uuid}")"
-}
-
-local:mount_device_by_uuid() {
-    local uuid device_path current_mount_path desired_mount_path
-    uuid="${1}"
-    device_path="$(_device_path_by_uuid "${uuid}")"
-    current_mount_path="$(_get_device_current_mount_path "${device_path}")"
-    desired_mount_path="$(local:device_mount_path_by_uuid "${uuid}")"
-    if [ "${current_mount_path}" == "" ]; then
-        echo "Mounting ${device_path} to ${desired_mount_path}..."
-        _sudo_if_needed mount "${device_path}" "${desired_mount_path}"
-    elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
-        panic "${device_path} is already mounted to ${current_mount_path}"
-    fi
-}
-
-local:unmount_on_exit() {
-    local filesystem_uuid="${1}"
-    # shellcheck disable=SC2064  # intentionally expanding this trap string now
-    trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")" EXIT
 }
 
 # src/lib/log.sh
@@ -771,10 +772,10 @@ backup_init_command() {
   config:read
   config:setup_restic_env "${args[destination]}"
 
-  if [ "${args[destination]}" == "local" ]; then
-      local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
-      local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
-      touch "$(local:device_mount_path_by_uuid "${LOCAL_FILESYSTEM_UUID}")/.nobackup"
+  if [ "${args[destination]}" == "${EXTERNAL_BACKUP_DEST}" ]; then
+      external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
+      external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
+      touch "$(external:device_mount_path_by_uuid "${EXTERNAL_FILESYSTEM_UUID}")/.nobackup"
   fi
 
   restic init
@@ -803,29 +804,29 @@ backup_run_command() {
           "${BACKUP_PATHS[@]}"
   }
 
-  backup_local() {
-      local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
-      local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
-      configure_and_run local
+  backup_external() {
+      external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
+      external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
+      configure_and_run "${EXTERNAL_BACKUP_DEST}"
   }
 
-  backup_remote() {
-      configure_and_run remote
+  backup_offsite() {
+      configure_and_run "${OFFSITE_BACKUP_DEST}"
   }
 
   case "${args[destination]:-}" in
-      local)
-          backup_local
+      "${EXTERNAL_BACKUP_DEST}")
+          backup_external
       ;;
-      remote)
-          backup_remote
+      "${OFFSITE_BACKUP_DEST}")
+          backup_offsite
       ;;
       *)
           # no destination specified; run both.
-          log:step "Backing up to local..."
-          backup_local
-          log:step "Backing up to remote..."
-          backup_remote
+          log:step "Backing up to ${EXTERNAL_BACKUP_DEST}..."
+          backup_external
+          log:step "Backing up to ${OFFSITE_BACKUP_DEST}..."
+          backup_offsite
       ;;
   esac
 
@@ -868,29 +869,29 @@ backup_check_command() {
       fi
   }
 
-  check_local() {
-      local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
-      local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
-      configure_and_run local
+  check_external() {
+      external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
+      external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
+      configure_and_run "${EXTERNAL_BACKUP_DEST}"
   }
 
-  check_remote() {
-      configure_and_run remote
+  check_offsite() {
+      configure_and_run "${OFFSITE_BACKUP_DEST}"
   }
 
   case "${args[destination]:-}" in
-      local)
-          check_local
+      "${EXTERNAL_BACKUP_DEST}")
+          check_external
       ;;
-      remote)
-          check_remote
+      "${OFFSITE_BACKUP_DEST}")
+          check_offsite
       ;;
       *)
           # no destination specified; run both.
-          log:step "Checking local..."
-          check_local
-          log:step "Checking remote..."
-          check_remote
+          log:step "Checking ${EXTERNAL_BACKUP_DEST}..."
+          check_external
+          log:step "Checking ${OFFSITE_BACKUP_DEST}..."
+          check_offsite
       ;;
   esac
 
@@ -914,8 +915,8 @@ backup_mount_command() {
   config:read
   config:setup_restic_env "${args[destination]}"
 
-  if [ "${args[destination]}" == "local" ]; then
-      local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
+  if [ "${args[destination]}" == "${EXTERNAL_BACKUP_DEST}" ]; then
+      external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
   fi
 
   mount_dir="$(mount:mountpoint_for_backup_dest "${args[destination]}")"
@@ -959,9 +960,9 @@ backup_unmount_command() {
   process:wait "${pid}"
   rm -f "${pid_file}"
 
-  if [ "${args[destination]}" == "local" ]; then
+  if [ "${args[destination]}" == "${EXTERNAL_BACKUP_DEST}" ]; then
       config:read
-      local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+      external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
   fi
 
 }
@@ -974,9 +975,9 @@ backup_unlock_command() {
 
   config:read
 
-  if [ "${args[destination]}" == "local" ]; then
-      local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
-      local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
+  if [ "${args[destination]}" == "external" ]; then
+      external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
+      external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
   fi
 
   config:setup_restic_env "${args[destination]}"
@@ -1197,8 +1198,8 @@ backup_init_parse_requirements() {
   fi
 
   # :command.whitelist_filter
-  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
-    printf "%s\n" "destination must be one of: local, remote" >&2
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(external|offsite)$ ]]; then
+    printf "%s\n" "destination must be one of: external, offsite" >&2
     exit 1
   fi
 
@@ -1253,8 +1254,8 @@ backup_run_parse_requirements() {
   done
 
   # :command.whitelist_filter
-  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
-    printf "%s\n" "destination must be one of: local, remote" >&2
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(external|offsite)$ ]]; then
+    printf "%s\n" "destination must be one of: external, offsite" >&2
     exit 1
   fi
 
@@ -1322,8 +1323,8 @@ backup_check_parse_requirements() {
   done
 
   # :command.whitelist_filter
-  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
-    printf "%s\n" "destination must be one of: local, remote" >&2
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(external|offsite)$ ]]; then
+    printf "%s\n" "destination must be one of: external, offsite" >&2
     exit 1
   fi
 
@@ -1385,8 +1386,8 @@ backup_mount_parse_requirements() {
   fi
 
   # :command.whitelist_filter
-  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
-    printf "%s\n" "destination must be one of: local, remote" >&2
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(external|offsite)$ ]]; then
+    printf "%s\n" "destination must be one of: external, offsite" >&2
     exit 1
   fi
 
@@ -1448,8 +1449,8 @@ backup_unmount_parse_requirements() {
   fi
 
   # :command.whitelist_filter
-  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
-    printf "%s\n" "destination must be one of: local, remote" >&2
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(external|offsite)$ ]]; then
+    printf "%s\n" "destination must be one of: external, offsite" >&2
     exit 1
   fi
 
@@ -1511,8 +1512,8 @@ backup_unlock_parse_requirements() {
   fi
 
   # :command.whitelist_filter
-  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(local|remote)$ ]]; then
-    printf "%s\n" "destination must be one of: local, remote" >&2
+  if [[ -n ${args['destination']:-} ]] && [[ ! ${args['destination']:-} =~ ^(external|offsite)$ ]]; then
+    printf "%s\n" "destination must be one of: external, offsite" >&2
     exit 1
   fi
 
@@ -1585,6 +1586,9 @@ before_hook() {
   XDG_STATE_HOME="${XDG_STATE_HOME:-"${HOME}/.local/state"}"
   BACKUP_TEMP_DIR="$(mktemp --directory "${TMPDIR:-/tmp}/backup.XXXXXX")"
   chmod -R go-rwx "${BACKUP_TEMP_DIR}"
+
+  EXTERNAL_BACKUP_DEST="external"
+  OFFSITE_BACKUP_DEST="offsite"
 
   on_exit() {
       rm -rf "${BACKUP_TEMP_DIR}"

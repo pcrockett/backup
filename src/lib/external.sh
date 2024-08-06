@@ -26,7 +26,7 @@ _sudo_if_needed() {
     fi
 }
 
-local:device_mount_path_by_uuid() {
+external:device_mount_path_by_uuid() {
     local uuid run_user_dir mount_path
     uuid="${1}"
     run_user_dir="/run/user/$(id --user)"
@@ -39,23 +39,23 @@ local:device_mount_path_by_uuid() {
     echo "${mount_path}"
 }
 
-local:repo_path_by_uuid() {
+external:repo_path_by_uuid() {
     local uuid="${1}"
     local backup_subdir="${2}"
-    echo "$(local:device_mount_path_by_uuid "${uuid}")/${backup_subdir}"
+    echo "$(external:device_mount_path_by_uuid "${uuid}")/${backup_subdir}"
 }
 
 _unmount_device_by_uuid() {
     local uuid="${1}"
-    _sudo_if_needed umount "$(local:device_mount_path_by_uuid "${uuid}")"
+    _sudo_if_needed umount "$(external:device_mount_path_by_uuid "${uuid}")"
 }
 
-local:mount_device_by_uuid() {
+external:mount_device_by_uuid() {
     local uuid device_path current_mount_path desired_mount_path
     uuid="${1}"
     device_path="$(_device_path_by_uuid "${uuid}")"
     current_mount_path="$(_get_device_current_mount_path "${device_path}")"
-    desired_mount_path="$(local:device_mount_path_by_uuid "${uuid}")"
+    desired_mount_path="$(external:device_mount_path_by_uuid "${uuid}")"
     if [ "${current_mount_path}" == "" ]; then
         echo "Mounting ${device_path} to ${desired_mount_path}..."
         _sudo_if_needed mount "${device_path}" "${desired_mount_path}"
@@ -64,7 +64,8 @@ local:mount_device_by_uuid() {
     fi
 }
 
-local:unmount_on_exit() {
+external:unmount_on_exit() {
+    # TODO: BUG: this overwrites another very important trap. 😢
     local filesystem_uuid="${1}"
     # shellcheck disable=SC2064  # intentionally expanding this trap string now
     trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")" EXIT

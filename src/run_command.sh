@@ -17,28 +17,28 @@ configure_and_run() {
         "${BACKUP_PATHS[@]}"
 }
 
-backup_local() {
-    local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
-    local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
-    configure_and_run local
+backup_external() {
+    external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
+    external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
+    configure_and_run "${EXTERNAL_BACKUP_DEST}"
 }
 
-backup_remote() {
-    configure_and_run remote
+backup_offsite() {
+    configure_and_run "${OFFSITE_BACKUP_DEST}"
 }
 
 case "${args[destination]:-}" in
-    local)
-        backup_local
+    "${EXTERNAL_BACKUP_DEST}")
+        backup_external
     ;;
-    remote)
-        backup_remote
+    "${OFFSITE_BACKUP_DEST}")
+        backup_offsite
     ;;
     *)
         # no destination specified; run both.
-        log:step "Backing up to local..."
-        backup_local
-        log:step "Backing up to remote..."
-        backup_remote
+        log:step "Backing up to ${EXTERNAL_BACKUP_DEST}..."
+        backup_external
+        log:step "Backing up to ${OFFSITE_BACKUP_DEST}..."
+        backup_offsite
     ;;
 esac

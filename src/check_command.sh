@@ -32,29 +32,29 @@ configure_and_run() {
     fi
 }
 
-check_local() {
-    local:mount_device_by_uuid "${LOCAL_FILESYSTEM_UUID}"
-    local:unmount_on_exit "${LOCAL_FILESYSTEM_UUID}"
-    configure_and_run local
+check_external() {
+    external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
+    external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
+    configure_and_run "${EXTERNAL_BACKUP_DEST}"
 }
 
-check_remote() {
-    configure_and_run remote
+check_offsite() {
+    configure_and_run "${OFFSITE_BACKUP_DEST}"
 }
 
 case "${args[destination]:-}" in
-    local)
-        check_local
+    "${EXTERNAL_BACKUP_DEST}")
+        check_external
     ;;
-    remote)
-        check_remote
+    "${OFFSITE_BACKUP_DEST}")
+        check_offsite
     ;;
     *)
         # no destination specified; run both.
-        log:step "Checking local..."
-        check_local
-        log:step "Checking remote..."
-        check_remote
+        log:step "Checking ${EXTERNAL_BACKUP_DEST}..."
+        check_external
+        log:step "Checking ${OFFSITE_BACKUP_DEST}..."
+        check_offsite
     ;;
 esac
 

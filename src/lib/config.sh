@@ -45,14 +45,14 @@ config:write_template_to() {
 
 RESTIC_E2EE_PASSWORD="TODO"
 
-# Remote (S3-compatible) backup destination config
+# Offsite (S3-compatible) backup destination config
 AWS_ACCESS_KEY_ID="TODO"
 AWS_SECRET_ACCESS_KEY="TODO"
 S3_REPOSITORY_URL="s3:https://example.com/bucket-name"
 
-# Local (ex: USB) backup destination config
-LOCAL_FILESYSTEM_UUID="Find this with the \`blkid\` command"
-LOCAL_BACKUP_DIR="restic-backup"  # save on the local filesystem under restic-backup/ directory
+# External (ex: USB drive) backup destination config
+EXTERNAL_FILESYSTEM_UUID="Find this with the \`blkid\` command"
+EXTERNAL_BACKUP_DIR="restic-backup"  # save on the external filesystem under restic-backup/ directory
 
 BACKUP_PATHS=(
     "${HOME}"
@@ -91,13 +91,13 @@ config:setup_restic_env() {
     local backup_dest="${1}"
 
     case "${backup_dest}" in
-        remote)
+        "${OFFSITE_BACKUP_DEST}")
             export AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY
             export RESTIC_REPOSITORY="${S3_REPOSITORY_URL}"
         ;;
-        local)
-            RESTIC_REPOSITORY="$(local:repo_path_by_uuid "${LOCAL_FILESYSTEM_UUID}" "${LOCAL_BACKUP_DIR}")"
+        "${EXTERNAL_BACKUP_DEST}")
+            RESTIC_REPOSITORY="$(external:repo_path_by_uuid "${EXTERNAL_FILESYSTEM_UUID}" "${EXTERNAL_BACKUP_DIR}")"
             export RESTIC_REPOSITORY
         ;;
         *)

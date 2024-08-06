@@ -9,17 +9,17 @@ This implements my version of a 3-2-1 backup system:
 **3 copies of your data:**
 
 1. Your original copy
-2. A local USB drive
-3. An S3-compatible storage service
+2. An external drive
+3. An off-site S3-compatible storage service
 
 **2 storage mediums:**
 
-1. Your internal storage and local USB drive
-2. An S3-compatible service
+1. Your internal storage and external drive
+2. An off-site S3-compatible service
 
 **1 copy off-site:**
 
-1. An S3-compatible service
+1. An off-site S3-compatible service
 
 ## Configuration
 
@@ -37,7 +37,7 @@ The default config is generated for you and is easy to fill out.
 
 ## Dependencies
 
-Only Linux is supported for now. Other dependencies:
+Only Linux is supported. Other dependencies:
 
 * [Restic](https://github.com/restic/restic/)
 * A modern version of Bash
@@ -50,13 +50,13 @@ Download the [backup script](backup) to some location on your `PATH` and make it
 # Configure your backups
 backup config --edit
 
-# Create your local (USB) backup repository
-backup init local
+# Create your external drive backup repository
+backup init external
 
 # Create your off-site S3 backup repository
-backup init remote
+backup init offsite
 
-# Backup your data to both local and remote destinations
+# Backup your data to both external and off-site destinations
 backup run
 
 # Check both backup destinations for errors
@@ -66,7 +66,7 @@ backup check
 backup check --file ./some/important/file
 
 # Mount one of your backups to access / restore the data inside
-backup mount remote
+backup mount offsite
 ```
 
 For more details, see `backup --help`
