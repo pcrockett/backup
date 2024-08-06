@@ -1,4 +1,5 @@
 # shellcheck shell=bash
+# shellcheck disable=SC2034
 ## [tag:before-hook]
 ##
 ## Any code here will be placed inside a `before_hook()` function and called
@@ -11,7 +12,15 @@ chmod -R go-rwx "${BACKUP_TEMP_DIR}"
 EXTERNAL_BACKUP_DEST="external"
 OFFSITE_BACKUP_DEST="offsite"
 
+# don't modify this yourself. instead use [ref:add_trap].
+TRAPS=(
+    "rm -rf $(util:escape_value "${BACKUP_TEMP_DIR}")"
+)
+
 on_exit() {
-    rm -rf "${BACKUP_TEMP_DIR}"
+    for trap in "${TRAPS[@]}"; do
+        # log:info "Running \`${trap}\`..."
+        eval "${trap}"
+    done
 }
 trap 'on_exit' SIGINT SIGTERM EXIT

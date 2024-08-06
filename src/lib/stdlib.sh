@@ -5,3 +5,8 @@ panic() {
     log:red "FATAL: ${*}\n" >&2
     exit 1
 }
+
+add_trap() {
+    # [tag:add_trap]
+    TRAPS=("${*}" "${TRAPS[@]}")
+}

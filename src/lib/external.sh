@@ -65,8 +65,7 @@ external:mount_device_by_uuid() {
 }
 
 external:unmount_on_exit() {
-    # TODO: BUG: this overwrites another very important trap. 😢
     local filesystem_uuid="${1}"
     # shellcheck disable=SC2064  # intentionally expanding this trap string now
-    trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")" EXIT
+    add_trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")"
 }

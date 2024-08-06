@@ -542,10 +542,9 @@ external:mount_device_by_uuid() {
 }
 
 external:unmount_on_exit() {
-    # TODO: BUG: this overwrites another very important trap. 😢
     local filesystem_uuid="${1}"
     # shellcheck disable=SC2064  # intentionally expanding this trap string now
-    trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")" EXIT
+    add_trap "_unmount_device_by_uuid $(util:escape_value "${filesystem_uuid}")"
 }
 
 # src/lib/hash.sh
@@ -718,6 +717,11 @@ panic() {
     # for when you really shouldn't keep calm and carry on
     log:red "FATAL: ${*}\n" >&2
     exit 1
+}
+
+add_trap() {
+    # [tag:add_trap]
+    TRAPS=("${*}" "${TRAPS[@]}")
 }
 
 # src/lib/util.sh
@@ -1582,6 +1586,7 @@ backup_config_parse_requirements() {
 before_hook() {
   # src/before.sh
   # shellcheck shell=bash
+  # shellcheck disable=SC2034
 
   XDG_STATE_HOME="${XDG_STATE_HOME:-"${HOME}/.local/state"}"
   BACKUP_TEMP_DIR="$(mktemp --directory "${TMPDIR:-/tmp}/backup.XXXXXX")"
@@ -1590,8 +1595,16 @@ before_hook() {
   EXTERNAL_BACKUP_DEST="external"
   OFFSITE_BACKUP_DEST="offsite"
 
+  # don't modify this yourself. instead use [ref:add_trap].
+  TRAPS=(
+      "rm -rf $(util:escape_value "${BACKUP_TEMP_DIR}")"
+  )
+
   on_exit() {
-      rm -rf "${BACKUP_TEMP_DIR}"
+      for trap in "${TRAPS[@]}"; do
+          # log:info "Running \`${trap}\`..."
+          eval "${trap}"
+      done
   }
   trap 'on_exit' SIGINT SIGTERM EXIT
 
