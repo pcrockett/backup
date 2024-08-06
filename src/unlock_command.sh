@@ -3,7 +3,7 @@
 
 config:read
 
-if [ "${args[destination]}" == "external" ]; then
+if [ "${args[destination]}" == "${EXTERNAL_BACKUP_DEST}" ]; then
     external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
     external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
 fi
