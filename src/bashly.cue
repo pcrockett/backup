@@ -44,7 +44,7 @@ commands: [
 	},
 	{
 		name: "check"
-		help: "Check your backup repository for errors"
+		help: "Check one or both repositories for errors"
 		flags: [
 			{
 				long:  "--file"

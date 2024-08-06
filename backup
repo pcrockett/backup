@@ -28,7 +28,7 @@ backup_usage() {
   printf "%s\n" "Commands:"
   printf "  %s   Initialize a new repository\n" "init   "
   printf "  %s   Backup data to one or both repositories\n" "run    "
-  printf "  %s   Check your backup repository for errors\n" "check  "
+  printf "  %s   Check one or both repositories for errors\n" "check  "
   printf "  %s   Mount your backup repository\n" "mount  "
   printf "  %s   Unmount your backup repository\n" "unmount"
   printf "  %s   Remove a stale lock from a backup repository\n" "unlock "
@@ -124,7 +124,7 @@ backup_run_usage() {
 
 # :command.usage
 backup_check_usage() {
-  printf "backup check - Check your backup repository for errors\n\n"
+  printf "backup check - Check one or both repositories for errors\n\n"
 
   printf "%s\n" "Usage:"
   printf "  backup check [DESTINATION] [OPTIONS]\n"
