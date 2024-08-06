@@ -26,6 +26,7 @@ compose_down: tests/docker-compose.yml
 
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
+	sed --in-place 's|\[tag:|[ref:|g' backup
 
 src/bashly.yml: src/bashly.cue
 	cue fmt src/bashly.cue

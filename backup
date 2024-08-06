@@ -720,7 +720,7 @@ panic() {
 }
 
 add_trap() {
-    # [tag:add_trap]
+    # [ref:add_trap]
     TRAPS=("${*}" "${TRAPS[@]}")
 }
 
