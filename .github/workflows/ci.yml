@@ -16,5 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Lint
-      run: shellcheck ./backup
+    - name: Build / Lint
+      run: make ci
+    - name: Test
+      run: make test

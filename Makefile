@@ -11,8 +11,9 @@ lint: backup
 ci:
 	rm -f backup
 	docker build --tag backup-ci .
-	docker run --name backup-ci-temp backup-ci make build lint
+	docker run --name backup-ci-temp backup-ci make build lint compose.yml
 	docker cp backup-ci-temp:/app/backup .
+	docker cp backup-ci-temp:/app/compose.yml .
 	docker container rm --force backup-ci-temp
 .PHONY: ci
 
@@ -45,4 +46,5 @@ src/bashly.yml: src/bashly.cue
 	cue export --out yaml src/bashly.cue > src/bashly.yml
 
 compose.yml: compose.cue
+	cue fmt compose.cue
 	cue export --out yaml compose.cue > compose.yml
