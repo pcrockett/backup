@@ -14,6 +14,8 @@ ci:
 	docker run --name backup-ci-temp backup-ci make build lint compose.yml
 	docker cp backup-ci-temp:/app/backup .
 	docker cp backup-ci-temp:/app/compose.yml .
+	docker cp backup-ci-temp:/app/settings.yml .
+	docker cp backup-ci-temp:/app/src/bashly.yml ./src/
 	docker container rm --force backup-ci-temp
 .PHONY: ci
 
