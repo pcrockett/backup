@@ -8,6 +8,11 @@ lint: backup
 	shellcheck ./backup src/*.sh src/lib/*.sh tests/*.sh tests/*.bats
 .PHONY: lint
 
+ci:
+	docker build --tag backup-ci .
+	docker run --rm backup-ci make build lint
+.PHONY: ci
+
 test: backup compose_up
 	bats --print-output-on-failure ./tests
 .PHONY: test
@@ -20,12 +25,12 @@ install_global: backup
 	sudo install backup /usr/local/bin/
 .PHONY: install_global
 
-compose_up: tests/docker-compose.yml
-	docker compose --file tests/docker-compose.yml up --wait
+compose_up: compose.yml
+	docker compose --file compose.yml up --wait
 .PHONY: compose_up
 
-compose_down: tests/docker-compose.yml
-	docker compose --file tests/docker-compose.yml down
+compose_down: compose.yml
+	docker compose --file compose.yml down
 .PHONY: compose_down
 
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
@@ -36,5 +41,5 @@ src/bashly.yml: src/bashly.cue
 	cue fmt src/bashly.cue
 	cue export --out yaml src/bashly.cue > src/bashly.yml
 
-tests/docker-compose.yml: tests/docker-compose.cue
-	cue export --out yaml tests/docker-compose.cue > tests/docker-compose.yml
+compose.yml: compose.cue
+	cue export --out yaml compose.cue > compose.yml

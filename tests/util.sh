@@ -4,7 +4,7 @@ setup() {
     set -Eeuo pipefail
     local repo_dir
     repo_dir="$(readlink -f "${PWD}")"
-    export BACKUP_COMPOSE_FILE="${repo_dir}/tests/docker-compose.yml"
+    export BACKUP_COMPOSE_FILE="${repo_dir}/compose.yml"
     TEST_CWD="$(mktemp --directory --tmpdir=/tmp bats-test.XXXXXX)"
     TEST_HOME="$(mktemp --directory --tmpdir=/tmp bats-home.XXXXXX)"
     TEST_BIN="${TEST_HOME}/.local/bin"
