@@ -9,8 +9,11 @@ lint: backup
 .PHONY: lint
 
 ci:
+	rm -f backup
 	docker build --tag backup-ci .
-	docker run --rm backup-ci make build lint
+	docker run --name backup-ci-temp backup-ci make build lint
+	docker cp backup-ci-temp:/app/backup .
+	docker container rm --force backup-ci-temp
 .PHONY: ci
 
 test: backup compose_up
