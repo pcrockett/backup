@@ -4,7 +4,7 @@ setup() {
     set -Eeuo pipefail
     local repo_dir
     repo_dir="$(readlink -f "${PWD}")"
-    export BACKUP_COMPOSE_FILE="${repo_dir}/tests/docker-compose.yml"
+    export BACKUP_COMPOSE_FILE="${repo_dir}/compose.yml"
     TEST_CWD="$(mktemp --directory --tmpdir=/tmp bats-test.XXXXXX)"
     TEST_HOME="$(mktemp --directory --tmpdir=/tmp bats-home.XXXXXX)"
     TEST_BIN="${TEST_HOME}/.local/bin"
@@ -36,6 +36,8 @@ EOF
     cd "${TEST_CWD}"
     PATH="${TEST_BIN}:${PATH}"
     export HOME="${TEST_HOME}"
+    export XDG_CONFIG_HOME="${TEST_HOME}/.config"
+    export XDG_STATE_HOME="${TEST_HOME}/.local/state"
     init-test-bucket.sh
 }
 

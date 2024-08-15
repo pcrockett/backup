@@ -1,0 +1,11 @@
+.dockerignore
+.envrc
+.envrc.example
+.git/
+.github/
+.gitignore
+backup
+compose.yml
+Dockerfile
+LICENSE
+README.md
