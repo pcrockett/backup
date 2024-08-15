@@ -36,6 +36,8 @@ EOF
     cd "${TEST_CWD}"
     PATH="${TEST_BIN}:${PATH}"
     export HOME="${TEST_HOME}"
+    export XDG_CONFIG_HOME="${TEST_HOME}/.config"
+    export XDG_STATE_HOME="${TEST_HOME}/.local/state"
     init-test-bucket.sh
 }
 
