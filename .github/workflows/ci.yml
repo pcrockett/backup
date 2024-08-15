@@ -23,5 +23,9 @@ jobs:
       run : |
         asdf plugin add bats https://github.com/pcrockett/asdf-bats.git
         asdf install bats
+    - name: Install Restic
+      run: |
+        curl -SsfL https://philcrockett.com/yolo/v1.sh \
+          | bash -s -- restic
     - name: Test
       run: make test
