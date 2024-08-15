@@ -42,6 +42,7 @@ EOF
 }
 
 teardown() {
+    pkill restic || true  # clean up background restic processes from failed tests
     rm -rf "${TEST_CWD}"
     rm -rf "${TEST_HOME}"
 }
