@@ -18,5 +18,10 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build / Lint
       run: make ci
+    - uses: asdf-vm/actions/setup@v3
+    - name: Install bats
+      run : |
+        asdf plugin add bats https://github.com/pcrockett/asdf-bats.git
+        asdf install bats
     - name: Test
       run: make test
