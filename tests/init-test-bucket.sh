@@ -5,7 +5,8 @@ THIS_SCRIPT="$(readlink -f "${0}")"
 
 init() {
     TESTS_DIR="$(dirname "${THIS_SCRIPT}")"
-    COMPOSE_FILE="${BACKUP_COMPOSE_FILE:-${TESTS_DIR}/docker-compose.yml}"
+    REPO_DIR="$(dirname "${TESTS_DIR}")"
+    COMPOSE_FILE="${BACKUP_COMPOSE_FILE:-${REPO_DIR}/compose.yml}"
     MINIO_INSTANCE_NAME="${MINIO_INSTANCE_NAME:-testinstance}"
     MINIO_INSTANCE_URL="${MINIO_INSTANCE_URL:-http://localhost:9000}"
     MINIO_ROOT_USER="${MINIO_ROOT_USER:-adminuser}"
