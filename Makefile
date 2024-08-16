@@ -13,6 +13,7 @@ ci:
 	docker build --tag backup-ci .
 	docker run --name backup-ci-temp backup-ci make build lint
 	docker cp backup-ci-temp:/app/backup .
+	docker cp backup-ci-temp:/app/src/bashly.yml ./src/
 	docker container rm --force backup-ci-temp
 .PHONY: ci
 
