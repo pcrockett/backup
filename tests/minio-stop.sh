@@ -10,7 +10,7 @@ if command -v mc &> /dev/null; then
     # we already have minio in our environment
     # (ex: we are running inside a docker container already with mc installed)
     if [ -f "${PID_FILE}" ]; then
-        kill <("${PID_FILE}") || true
+        kill "$(head -n 1 "${PID_FILE}")" || true
         rm "${PID_FILE}"
     fi
 else
