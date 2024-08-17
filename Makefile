@@ -8,18 +8,28 @@ lint: backup
 	shellcheck ./backup src/*.sh src/lib/*.sh tests/*.sh tests/*.bats
 .PHONY: lint
 
-ci:
-	rm -f backup
-	docker build --tag backup-ci .
-	docker run --name backup-ci-temp backup-ci make build lint
-	docker cp backup-ci-temp:/app/backup .
-	docker cp backup-ci-temp:/app/src/bashly.yml ./src/
-	docker container rm --force backup-ci-temp
-.PHONY: ci
-
-test: backup compose_up
+test: backup minio-start
 	bats --print-output-on-failure ./tests
 .PHONY: test
+
+devenv:
+	docker build --tag backup-ci .
+.PHONY: devenv
+
+ci: devenv
+	rm -f backup
+	docker container rm --force backup-ci-temp
+	docker run \
+		--env MINIO_ROOT_USER=adminuser \
+		--env MINIO_ROOT_PASSWORD=adminpassword \
+		--device /dev/fuse \
+		--cap-add SYS_ADMIN \
+		--security-opt apparmor:unconfined \
+		--name backup-ci-temp \
+		backup-ci make build lint test
+	docker cp backup-ci-temp:/app/backup .
+	docker container rm --force backup-ci-temp
+.PHONY: ci
 
 install: backup
 	cp backup ~/.local/bin
@@ -29,13 +39,13 @@ install_global: backup
 	sudo install backup /usr/local/bin/
 .PHONY: install_global
 
-compose_up:
-	docker compose up --wait
-.PHONY: compose_up
+minio-start:
+	./tests/minio-start.sh
+.PHONY: minio-start
 
-compose_down:
-	docker compose down
-.PHONY: compose_down
+minio-stop:
+	./tests/minio-stop.sh
+.PHONY: minio-stop
 
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate

@@ -8,8 +8,15 @@ RUN useradd --create-home user && \
 mkdir /app && \
 chown -R user:user /app && \
 apt-get update && \
-apt-get install --yes --no-install-recommends curl ca-certificates git make build-essential libyaml-dev ruby-dev && \
-apt-get clean && rm -rf /var/lib/apt/lists/*
+apt-get install --yes --no-install-recommends \
+    curl ca-certificates git make build-essential procps fuse3 libyaml-dev ruby-dev && \
+apt-get clean && rm -rf /var/lib/apt/lists/* && \
+curl -SsfL https://dl.min.io/server/minio/release/linux-amd64/minio > /usr/local/bin/minio && \
+chmod +x /usr/local/bin/minio && \
+curl -SsfL https://dl.min.io/client/mc/release/linux-amd64/mc > /usr/local/bin/mc && \
+chmod +x /usr/local/bin/mc && \
+mkdir /data && chown -R user:user /data && \
+curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- restic
 
 USER user
 ENV ASDF_DIR=/home/user/.asdf \
@@ -31,4 +38,4 @@ RUN asdf install
 
 COPY --chown=user:user . .
 
-CMD [ "/bin/bash" ]
+CMD [ "/usr/local/bin/minio", "server", "/data", "--console-address", ":9001" ]

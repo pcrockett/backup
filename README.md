@@ -40,6 +40,7 @@ The default config is generated for you and is easy to fill out.
 Only Linux is supported. Other dependencies:
 
 * [Restic](https://github.com/restic/restic/)
+* [fuse3](https://packages.debian.org/bookworm/fuse3)
 * A modern version of Bash
 
 ## Quick Start
