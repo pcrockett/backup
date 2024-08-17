@@ -16,16 +16,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build / Lint
+    - name: Build / Lint / Test
       run: make ci
-    - uses: asdf-vm/actions/setup@v3
-    - name: Install bats
-      run : |
-        asdf plugin add bats https://github.com/pcrockett/asdf-bats.git
-        asdf install bats
-    - name: Install Restic
-      run: |
-        curl -SsfL https://philcrockett.com/yolo/v1.sh \
-          | bash -s -- restic
-    - name: Test
-      run: make test

@@ -16,6 +16,7 @@ init() {
     MINIO_TEST_ACCESS_KEY="${MINIO_TEST_ACCESS_KEY:-testaccesskey}"
     MINIO_TEST_SECRET_KEY="${MINIO_TEST_SECRET_KEY:-testsecretkey}"
     MINIO_BUCKET_NAME="${MINIO_BUCKET_NAME:-testbucket}"
+    MINIO_DATA_DIR="${MINIO_DATA_DIR:-/data}"
 }
 
 compose_cmd() {
@@ -23,7 +24,23 @@ compose_cmd() {
 }
 
 minio_cmd() {
-    compose_cmd exec --workdir /data --no-TTY minio "${@}"
+    if command -v mc &> /dev/null; then
+        # we already have minio in our environment
+        # (ex: we are running inside a docker container already with mc installed)
+        # (used in CI)
+        pushd "${MINIO_DATA_DIR}" &> /dev/null
+        if "${@}"; then
+            result=0
+        else
+            result=1
+        fi
+        popd &> /dev/null
+        return ${result}
+    else
+        # we're running on a host somewhere that is running minio via docker compose
+        # (used during local development)
+        compose_cmd exec --workdir "${MINIO_DATA_DIR}" --no-TTY minio "${@}"
+    fi
 }
 
 setup_alias() {
