@@ -29,7 +29,7 @@
 // when `manifest-release` creates GitHub Releases per package, create
 // those as "Draft" releases (which can later be manually published).
 // absence defaults to false and Releases are created as already Published.
-draft: true
+draft: false
 
 // when `manifest-release` creates GitHub Releases per package, create
 // those as "Prerelease" releases that have pre-major or prerelease versions.

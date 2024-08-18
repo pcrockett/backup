@@ -6,7 +6,7 @@
     "bump-minor-pre-major": true,
     "bump-patch-for-minor-pre-major": true,
     "prerelease-type": "beta",
-    "draft": true,
+    "draft": false,
     "skip-github-release": false,
     "release-search-depth": 400,
     "commit-search-depth": 500,
