@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.3](https://github.com/pcrockett/backup/compare/v0.1.2...v0.1.3) (2024-08-18)
+
+
+### Bug Fixes
+
+* **release:** missed a dollar sign ([#22](https://github.com/pcrockett/backup/issues/22)) ([6e4a465](https://github.com/pcrockett/backup/commit/6e4a465f25f5c372bbe751986cf7dcdf0b4ae871))
+* **release:** upload artifact after release-please in same workflow ([#19](https://github.com/pcrockett/backup/issues/19)) ([5aebf8a](https://github.com/pcrockett/backup/commit/5aebf8ab435f3b9fe796c574e1ec03b6d4318ad7))
+* **release:** upload artifacts after release ([#21](https://github.com/pcrockett/backup/issues/21)) ([da73590](https://github.com/pcrockett/backup/commit/da73590bf2f84fd806dd844ed0203378c8630571))
+
 ## [0.1.2](https://github.com/pcrockett/backup/compare/v0.1.1...v0.1.2) (2024-08-18)
 
 
