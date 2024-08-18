@@ -19,3 +19,10 @@ committing._ You just need to make sure all _pull requests_ have a Conventional 
 If you want to cut a new release, make sure you include the phrase `Release-As: x.x.x` in your pull
 request's final commit message. _Don't worry about bumping any version numbers in the source._ The
 Release Please bot will do that for you in a new release PR.
+
+## Testing
+
+Generally we only do automated testing for the "offsite" use case. This is because it requires no
+root privileges or physical devices. All it requires is running an ephemeral S3-compatible service
+in the background during tests. For this, we use [MinIO](https://github.com/minio/minio) in a
+Docker container.

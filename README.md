@@ -45,7 +45,8 @@ Only Linux is supported. Other dependencies:
 
 ## Quick Start
 
-Download the [backup script](backup) to some location on your `PATH` and make it executable.
+Download the backup script from the [latest release](https://github.com/pcrockett/backup/releases/latest)
+to some location on your `PATH` and make it executable.
 
 ```bash
 # Configure your backups
