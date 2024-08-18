@@ -1,7 +1,7 @@
 all: build lint test
 .PHONY: all
 
-build: backup
+build: backup release-please-config.json
 .PHONY: build
 
 lint: backup
@@ -28,6 +28,7 @@ ci: devenv
 		--name backup-ci-temp \
 		backup-ci make build lint test
 	docker cp backup-ci-temp:/app/backup .
+	docker cp backup-ci-temp:/app/release-please-config.json .
 	docker container rm --force backup-ci-temp
 .PHONY: ci
 
@@ -54,3 +55,7 @@ backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 src/bashly.yml: src/bashly.cue
 	cue fmt src/bashly.cue
 	cue export --out yaml src/bashly.cue > src/bashly.yml
+
+release-please-config.json: release-please-config.cue
+	cue fmt release-please-config.cue
+	cue export --out json release-please-config.cue > release-please-config.json
