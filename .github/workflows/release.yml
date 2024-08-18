@@ -13,11 +13,11 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: make ci
-        run: make ci
       - uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f
         with:
           config-file: release-please-config.json
+      - uses: actions/checkout@v4
       - name: upload release artifacts
         run: bin/upload-release-artifacts.sh
+        env:
+          GH_TOKEN: {{ github.token }}
