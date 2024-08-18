@@ -20,4 +20,4 @@ jobs:
       - name: upload release artifacts
         run: bin/upload-release-artifacts.sh
         env:
-          GH_TOKEN: {{ github.token }}
+          GH_TOKEN: ${{ github.token }}
