@@ -16,6 +16,14 @@ devenv:
 	docker build --tag backup-ci .
 .PHONY: devenv
 
+devenv-build: devenv
+	rm -f backup
+	docker container rm --force backup-ci-temp
+	docker run --name backup-ci-temp backup-ci make build
+	docker cp backup-ci-temp:/app/backup .
+	docker container rm --force backup-ci-temp
+.PHONY: devenv-build
+
 ci: devenv
 	rm -f backup
 	docker container rm --force backup-ci-temp

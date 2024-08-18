@@ -17,6 +17,7 @@ main() {
     if [ "${current_release_asset_count}" == "" ]; then
         echo "Release v${current_release_version} hasn't been created yet. Nothing to upload."
     elif [ "${current_release_asset_count}" -eq 0 ]; then
+        make devenv-build
         gh release upload "v${current_release_version}" ./backup
     else
         echo "Release v${current_release_version} already has assets. No need to upload anything new."
