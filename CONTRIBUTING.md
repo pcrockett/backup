@@ -16,9 +16,13 @@ If you want to get started editing the code, you have two options:
 automate the release process. _You don't need to use Conventional Commits for your day-to-day
 committing._ You just need to make sure all _pull requests_ have a Conventional Commit title.
 
-If you want to cut a new release, make sure you include the phrase `Release-As: x.x.x` in your pull
-request's final commit message. _Don't worry about bumping any version numbers in the source._ The
-Release Please bot will do that for you in a new release PR.
+If you did your Conventional Commits correctly, Release Please will have generated a
+correct "release" pull request for you. Once that PR is merged, a new release will be created and
+the `backup` build artifact will be added to it.
+
+However if you want to release with a specific version number, get a commit onto the main branch
+with the phrase `Release-As: x.x.x` somewhere in the commit message. That will instruct Release
+Please to modify its "release" PR with the correct version number.
 
 ## Testing
 
