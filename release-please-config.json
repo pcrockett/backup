@@ -1,0 +1,16 @@
+{
+    "release-type": "simple",
+    "extra-files": [
+        "src/bashly.cue"
+    ],
+    "bump-minor-pre-major": true,
+    "bump-patch-for-minor-pre-major": true,
+    "prerelease-type": "beta",
+    "draft": true,
+    "skip-github-release": false,
+    "release-search-depth": 400,
+    "commit-search-depth": 500,
+    "packages": {
+        ".": {}
+    }
+}
