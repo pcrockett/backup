@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/pcrockett/backup/compare/v0.1.1...v0.1.2) (2024-08-18)
+
+
+### Bug Fixes
+
+* **release:** trigger workflow on publish ([#17](https://github.com/pcrockett/backup/issues/17)) ([f74944c](https://github.com/pcrockett/backup/commit/f74944ce8f3765e70a7a2e3da3a5aaf08eb4d8dc))
+
 ## [0.1.1](https://github.com/pcrockett/backup/compare/v0.1.0...v0.1.1) (2024-08-18)
 
 
