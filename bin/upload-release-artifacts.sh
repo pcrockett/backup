@@ -6,7 +6,12 @@ current_release() {
 }
 
 asset_count() {
-    gh release view --json assets --jq '.assets | length' "v${1}" || echo ""
+    local count
+    if count="$(gh release view --json assets --jq '.assets | length' "v${1}")"; then
+        echo "${count}"
+    else
+        echo ""
+    fi
 }
 
 main() {
