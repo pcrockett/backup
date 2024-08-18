@@ -71,3 +71,7 @@ backup mount offsite
 ```
 
 For more details, see `backup --help`
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
