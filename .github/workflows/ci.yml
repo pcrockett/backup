@@ -12,9 +12,9 @@ permissions:
   # packages: write
 
 jobs:
-  lint:
+  build-test-lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build / Lint / Test
+    - name: make ci
       run: make ci
