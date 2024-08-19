@@ -100,4 +100,8 @@ commands: [
 			},
 		]
 	},
+	{
+		name: "automagic"
+		help: "Configure automatic backup when external drive is plugged in"
+	},
 ]
