@@ -5,11 +5,11 @@ build: backup release-please-config.json
 .PHONY: build
 
 lint: backup
-	shellcheck ./backup src/*.sh src/lib/*.sh tests/*.sh tests/*.bats
+	shellcheck ./backup src/*.sh src/lib/*.sh tests/*.sh tests/*.bats bin/*.sh
 .PHONY: lint
 
 test: backup minio-start
-	bats --print-output-on-failure ./tests
+	bats --verbose-run --print-output-on-failure ./tests
 .PHONY: test
 
 devenv:
@@ -18,35 +18,25 @@ devenv:
 
 devenv-build: devenv
 	rm -f backup
-	docker container rm --force backup-ci-temp
-	docker run --name backup-ci-temp backup-ci make build
-	docker cp backup-ci-temp:/app/backup .
-	docker container rm --force backup-ci-temp
+	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build
 .PHONY: devenv-build
+
+devenv-test: devenv
+	./bin/devenv-run.sh make test
+.PHONY: devenv-test
+
+devenv-shell:
+	DOCKER_ARGS="--interactive --tty" ./bin/devenv-run.sh /bin/bash
+.PHONY: devenv-shell
 
 ci: devenv
 	rm -f backup
-	docker container rm --force backup-ci-temp
-	docker run \
-		--env MINIO_ROOT_USER=adminuser \
-		--env MINIO_ROOT_PASSWORD=adminpassword \
-		--device /dev/fuse \
-		--cap-add SYS_ADMIN \
-		--security-opt apparmor:unconfined \
-		--name backup-ci-temp \
-		backup-ci make build lint test
-	docker cp backup-ci-temp:/app/backup .
-	docker cp backup-ci-temp:/app/release-please-config.json .
-	docker container rm --force backup-ci-temp
+	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build lint test
 .PHONY: ci
 
 install: backup
-	cp backup ~/.local/bin
-.PHONY: install
-
-install_global: backup
 	sudo install backup /usr/local/bin/
-.PHONY: install_global
+.PHONY: install
 
 minio-start:
 	./tests/minio-start.sh
