@@ -5,6 +5,10 @@
 ## Any code here will be placed inside a `before_hook()` function and called
 ## before running any command (but after processing its arguments).
 
+if [ "$(id --user)" -ne 0 ]; then
+    panic "This command must be run as root."
+fi
+
 XDG_STATE_HOME="${XDG_STATE_HOME:-"${HOME}/.local/state"}"
 BACKUP_TEMP_DIR="$(mktemp --directory "${TMPDIR:-/tmp}/backup.XXXXXX")"
 chmod -R go-rwx "${BACKUP_TEMP_DIR}"
