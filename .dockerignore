@@ -5,7 +5,6 @@
 .github/
 .gitignore
 backup
-compose.yml
 Dockerfile
 LICENSE
 README.md
