@@ -25,7 +25,7 @@ devenv-test: devenv
 	./bin/devenv-run.sh make test
 .PHONY: devenv-test
 
-devenv-shell:
+devenv-shell: devenv
 	DOCKER_ARGS="--interactive --tty" ./bin/devenv-run.sh /bin/bash
 .PHONY: devenv-shell
 
