@@ -2,10 +2,11 @@
 
 setup() {
     set -Eeuo pipefail
-    TEST_CWD="$(mktemp --directory --tmpdir=/tmp bats-test.XXXXXX)"
-    TEST_HOME="$(mktemp --directory --tmpdir=/tmp bats-home.XXXXXX)"
+    TEST_ENV_DIR="$(mktemp --directory --tmpdir=/tmp bats-test.XXXXXX)"
+    TEST_CWD="${TEST_ENV_DIR}/workdir"
+    TEST_HOME="${TEST_ENV_DIR}/home"
     TEST_BIN="${TEST_HOME}/.local/bin"
-    mkdir -p "${TEST_BIN}"
+    mkdir -p "${TEST_BIN}" "${TEST_CWD}"
     cp backup "${TEST_BIN}"
     cp tests/init-test-bucket.sh "${TEST_BIN}"
     cp .tool-versions "${TEST_CWD}"
@@ -35,13 +36,16 @@ EOF
     export HOME="${TEST_HOME}"
     export XDG_CONFIG_HOME="${TEST_HOME}/.config"
     export XDG_STATE_HOME="${TEST_HOME}/.local/state"
-    init-test-bucket.sh
+    init-test-bucket.sh \
+        > "${TEST_ENV_DIR}/init-bucket-output" \
+        2>&1
 }
 
 teardown() {
     pkill restic || true  # clean up background restic processes from failed tests
-    rm -rf "${TEST_CWD}"
-    rm -rf "${TEST_HOME}"
+    if [ "${BACKUP_DEBUG:-}" == "" ]; then
+        rm -rf "${TEST_ENV_DIR}"
+    fi
 }
 
 fail() {
@@ -52,14 +56,13 @@ fail() {
 # shellcheck disable=SC2034  # this function returns data via variables
 capture_output() {
     local stderr_file stdout_file
-    stderr_file="$(mktemp)"
-    stdout_file="$(mktemp)"
+    stderr_file="${TEST_ENV_DIR}/stderr"
+    stdout_file="${TEST_ENV_DIR}/stdout"
     capture_exit_code "${@}" \
         > "${stdout_file}" \
         2> "${stderr_file}"
     TEST_STDOUT="$(cat "${stdout_file}")"
     TEST_STDERR="$(cat "${stderr_file}")"
-    rm -f "${stdout_file}" "${stderr_file}"
 }
 
 # shellcheck disable=SC2034  # this function returns data via variables
