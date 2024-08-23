@@ -5,7 +5,7 @@ SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 # hadolint ignore=DL3008
 RUN \
 apt-get update && \
-apt-get install --yes --no-install-recommends curl ca-certificates git && \
+apt-get install --yes --no-install-recommends curl ca-certificates git bzip2 && \
 apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
