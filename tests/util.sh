@@ -16,9 +16,9 @@ setup() {
     export MINIO_TEST_SECRET_KEY="${MINIO_TEST_SECRET_KEY:-testsecretkey}"
     export MINIO_BUCKET_NAME="${MINIO_BUCKET_NAME:-testbucket}"
 
-    TEST_CONFIG="${TEST_HOME}/.config/backup"
-    mkdir --parent "${TEST_CONFIG}"
-    cat > "${TEST_CONFIG}/config.sh" <<EOF
+    TEST_CONFIG_DIR="/etc/backup"
+    mkdir --parent "${TEST_CONFIG_DIR}"
+    cat > "${TEST_CONFIG_DIR}/config.sh" <<EOF
 AWS_ACCESS_KEY_ID="${MINIO_TEST_ACCESS_KEY}"
 AWS_SECRET_ACCESS_KEY="${MINIO_TEST_SECRET_KEY}"
 S3_REPOSITORY_URL="s3:${MINIO_INSTANCE_URL}/${MINIO_BUCKET_NAME}"
