@@ -7,18 +7,12 @@ mount:is_mountpoint() {
 
 mount:mountpoint_for_backup_dest() {
     local backup_dest="${1}"
-    echo "${XDG_STATE_HOME}/backup/mount/${backup_dest}"
+    echo "${RUN_STATE_DIR}/mounts/repo/${backup_dest}"
 }
 
 mount:pid_file_by_dest() {
     local backup_dest="${1}"
-    local pid_dir run_user_dir
-    run_user_dir="/run/user/$(id --user)"
-    if [ -d "${run_user_dir}" ]; then
-        pid_dir="${run_user_dir}/backup/pid"
-    else
-        pid_dir="${XDG_STATE_HOME}/backup/pid"
-    fi
+    local pid_dir="${RUN_STATE_DIR}/pid"
     util:mkdir_private "${pid_dir}"
     echo "${pid_dir}/${backup_dest}"
 }

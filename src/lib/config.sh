@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 
 config:directory_path() {
-    echo "${XDG_CONFIG_HOME}/backup"
+    echo "/etc/backup"
 }
 
 config:file_path() {

@@ -9,8 +9,7 @@ if [ "$(id --user)" -ne 0 ]; then
     panic "This command must be run as root."
 fi
 
-readonly XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-"${HOME}/.config"}"
-readonly XDG_STATE_HOME="${XDG_STATE_HOME:-"${HOME}/.local/state"}"
+readonly RUN_STATE_DIR="/run/backup"
 BACKUP_TEMP_DIR="$(mktemp --directory "${TMPDIR:-/tmp}/backup.XXXXXX")"
 readonly BACKUP_TEMP_DIR
 chmod -R go-rwx "${BACKUP_TEMP_DIR}"

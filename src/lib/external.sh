@@ -18,14 +18,9 @@ _get_device_current_mount_path() {
 }
 
 external:device_mount_path_by_uuid() {
-    local uuid run_user_dir mount_path
+    local uuid mount_path
     uuid="${1}"
-    run_user_dir="/run/user/$(id --user)"
-    if [ -d "${run_user_dir}" ]; then
-        mount_path="${run_user_dir}/backup/${uuid}"
-    else
-        mount_path="${XDG_STATE_HOME}/backup/${uuid}"
-    fi
+    mount_path="${RUN_STATE_DIR}/mounts/fs/${uuid}"
     util:mkdir_private "${mount_path}"
     echo "${mount_path}"
 }
