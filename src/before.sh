@@ -9,12 +9,14 @@ if [ "$(id --user)" -ne 0 ]; then
     panic "This command must be run as root."
 fi
 
-XDG_STATE_HOME="${XDG_STATE_HOME:-"${HOME}/.local/state"}"
+readonly XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-"${HOME}/.config"}"
+readonly XDG_STATE_HOME="${XDG_STATE_HOME:-"${HOME}/.local/state"}"
 BACKUP_TEMP_DIR="$(mktemp --directory "${TMPDIR:-/tmp}/backup.XXXXXX")"
+readonly BACKUP_TEMP_DIR
 chmod -R go-rwx "${BACKUP_TEMP_DIR}"
 
-EXTERNAL_BACKUP_DEST="external"
-OFFSITE_BACKUP_DEST="offsite"
+readonly EXTERNAL_BACKUP_DEST="external"
+readonly OFFSITE_BACKUP_DEST="offsite"
 
 # don't modify this yourself. instead use [ref:add_trap].
 TRAPS=(
