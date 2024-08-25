@@ -17,7 +17,7 @@ FROM quay.io/minio/minio AS minio
 # we're just pulling a couple binaries out of this image. it looks like
 # the `dl.min.io` site where they recommend to download artifacts is fairly
 # unreliable, and as far as i can tell, very slow too. i imagine quay.io is
-# a better place from which do download.
+# a better place from which to download.
 
 
 FROM base AS restic
