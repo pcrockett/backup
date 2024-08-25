@@ -23,11 +23,7 @@ display_config() {
 }
 
 edit_config() {
-    if [ "${EDITOR:-}" == "" ]; then
-        panic "\$EDITOR has not been set!"
-    else
-        "${EDITOR}" "${config_file}"
-    fi
+    "${EDITOR:-nano}" "${config_file}"
 }
 
 if [ "${args[--edit]:-}" == "" ]; then
