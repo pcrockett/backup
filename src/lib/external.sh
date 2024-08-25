@@ -3,7 +3,7 @@
 _device_path_by_uuid() {
     # get the filesystem location of a device by UUID
     local uuid="${1}"
-    blkid --uuid "${uuid}" || panic "Unable to get device path for UUID ${uuid}"
+    blkid --uuid "${uuid}" || panic "Filesystem UUID ${uuid} not found."
 }
 
 _get_device_current_mount_path() {
