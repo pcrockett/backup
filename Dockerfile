@@ -3,10 +3,10 @@ SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 
 # don't need to pin apt package versions
 # hadolint ignore=DL3008
-RUN \
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
 apt-get update && \
-apt-get install --yes --no-install-recommends curl ca-certificates git bzip2 && \
-apt-get clean && rm -rf /var/lib/apt/lists/*
+apt-get install --yes --no-install-recommends curl ca-certificates git
 
 
 FROM base AS minio
@@ -20,7 +20,9 @@ chmod +x /usr/local/bin/mc
 
 FROM base AS restic
 SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
-RUN \
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+apt-get install --yes --no-install-recommends bzip2 && \
 curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- restic
 
 
@@ -30,13 +32,12 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # don't need to pin apt package versions
 # hadolint ignore=DL3008
-RUN \
+RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
 mkdir /app && \
 mkdir /data && \
-apt-get update && \
 apt-get install --yes --no-install-recommends \
-    make build-essential procps fuse3 libyaml-dev ruby-dev && \
-apt-get clean && rm -rf /var/lib/apt/lists/*
+    make build-essential procps fuse3 libyaml-dev ruby-dev
 
 COPY --from=minio /usr/local/bin/minio /usr/local/bin
 COPY --from=minio /usr/local/bin/mc /usr/local/bin
