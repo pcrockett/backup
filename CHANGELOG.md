@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.0](https://github.com/pcrockett/backup/compare/v0.1.3...v0.2.0) (2024-08-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* move config etc to system dirs ([#28](https://github.com/pcrockett/backup/issues/28))
+
+### Features
+
+* only run as root ([#25](https://github.com/pcrockett/backup/issues/25)) ([a6f5c63](https://github.com/pcrockett/backup/commit/a6f5c63318e1f17a00b4a18a04a03b7ce80773e8))
+
+
+### Bug Fixes
+
+* move config etc to system dirs ([#28](https://github.com/pcrockett/backup/issues/28)) ([6c3ca91](https://github.com/pcrockett/backup/commit/6c3ca919ed2c5faca4546f3d1424d23d205b8155))
+
 ## [0.1.3](https://github.com/pcrockett/backup/compare/v0.1.2...v0.1.3) (2024-08-18)
 
 
