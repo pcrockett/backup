@@ -17,15 +17,6 @@ _get_device_current_mount_path() {
     findmnt --raw --noheadings --output TARGET "${device_or_mount_path}" || true
 }
 
-_sudo_if_needed() {
-    if [ "$(id --user)" -eq 0 ]; then
-        "${@}"
-    else
-        echo "Running \`sudo ${*}\`..."
-        sudo "${@}"
-    fi
-}
-
 external:device_mount_path_by_uuid() {
     local uuid run_user_dir mount_path
     uuid="${1}"
@@ -47,7 +38,7 @@ external:repo_path_by_uuid() {
 
 _unmount_device_by_uuid() {
     local uuid="${1}"
-    _sudo_if_needed umount "$(external:device_mount_path_by_uuid "${uuid}")"
+    umount "$(external:device_mount_path_by_uuid "${uuid}")"
 }
 
 external:mount_device_by_uuid() {
@@ -58,7 +49,7 @@ external:mount_device_by_uuid() {
     desired_mount_path="$(external:device_mount_path_by_uuid "${uuid}")"
     if [ "${current_mount_path}" == "" ]; then
         echo "Mounting ${device_path} to ${desired_mount_path}..."
-        _sudo_if_needed mount "${device_path}" "${desired_mount_path}"
+        mount "${device_path}" "${desired_mount_path}"
     elif [ "${current_mount_path}" != "${desired_mount_path}" ]; then
         panic "${device_path} is already mounted to ${current_mount_path}"
     fi
