@@ -18,11 +18,11 @@ docker run \
     --device /dev/fuse \
     --cap-add SYS_ADMIN \
     --security-opt apparmor:unconfined \
-    --name backup-ci-temp \
+    --name "${CONTAINER_NAME}" \
     ${DOCKER_ARGS:-} \
-    backup-ci "${@}"
+    "${IMAGE_NAME}" "${@}"
 
 if [ "${COPY_ARTIFACTS:-}" != "" ]; then
-    docker cp backup-ci-temp:/app/backup .
-    docker cp backup-ci-temp:/app/release-please-config.json .
+    docker cp "${CONTAINER_NAME}":/app/backup .
+    docker cp "${CONTAINER_NAME}":/app/release-please-config.json .
 fi

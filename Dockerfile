@@ -1,26 +1,49 @@
-FROM docker.io/library/debian:12-slim
+FROM docker.io/library/debian:12-slim AS base
+SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
+
+# don't need to pin apt package versions
+# hadolint ignore=DL3008
+RUN \
+apt-get update && \
+apt-get install --yes --no-install-recommends curl ca-certificates git bzip2 && \
+apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
+FROM base AS minio
+RUN echo "Installing minio..." && \
+curl -SsfL https://dl.min.io/server/minio/release/linux-amd64/minio > /usr/local/bin/minio && \
+chmod +x /usr/local/bin/minio && \
+echo "Installing mc..." && \
+curl -SsfL https://dl.min.io/client/mc/release/linux-amd64/mc > /usr/local/bin/mc && \
+chmod +x /usr/local/bin/mc
+
+
+FROM base AS restic
+SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
+RUN \
+curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- restic
+
+
+FROM base AS devenv
 SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 ARG DEBIAN_FRONTEND=noninteractive
 
 # don't need to pin apt package versions
 # hadolint ignore=DL3008
-RUN useradd --create-home user && \
+RUN \
 mkdir /app && \
-chown -R user:user /app && \
+mkdir /data && \
 apt-get update && \
 apt-get install --yes --no-install-recommends \
-    curl ca-certificates git make build-essential procps fuse3 libyaml-dev ruby-dev && \
-apt-get clean && rm -rf /var/lib/apt/lists/* && \
-curl -SsfL https://dl.min.io/server/minio/release/linux-amd64/minio > /usr/local/bin/minio && \
-chmod +x /usr/local/bin/minio && \
-curl -SsfL https://dl.min.io/client/mc/release/linux-amd64/mc > /usr/local/bin/mc && \
-chmod +x /usr/local/bin/mc && \
-mkdir /data && chown -R user:user /data && \
-curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- restic
+    make build-essential procps fuse3 libyaml-dev ruby-dev && \
+apt-get clean && rm -rf /var/lib/apt/lists/*
 
-USER user
-ENV ASDF_DIR=/home/user/.asdf \
-    PATH="/home/user/.asdf/shims:/home/user/.asdf/bin:${PATH}"
+COPY --from=minio /usr/local/bin/minio /usr/local/bin
+COPY --from=minio /usr/local/bin/mc /usr/local/bin
+COPY --from=restic /usr/local/bin/restic /usr/local/bin
+
+ENV ASDF_DIR=/root/.asdf \
+    PATH="/root/.asdf/shims:/root/.asdf/bin:${PATH}"
 
 # don't care about "source" warning in shellcheck
 # hadolint ignore=SC1091
@@ -33,9 +56,9 @@ asdf plugin add cue && \
 asdf plugin add shellcheck
 
 WORKDIR /app
-COPY --chown=user:user .tool-versions .
+COPY .tool-versions .
 RUN asdf install
 
-COPY --chown=user:user . .
+COPY . .
 
 CMD [ "/usr/local/bin/minio", "server", "/data", "--console-address", ":9001" ]

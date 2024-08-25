@@ -1,7 +1,7 @@
-all: build lint test
+all: ci
 .PHONY: all
 
-build: backup release-please-config.json
+build: backup
 .PHONY: build
 
 lint: backup
@@ -11,6 +11,11 @@ lint: backup
 test: backup minio-start
 	bats --verbose-run --print-output-on-failure ./tests
 .PHONY: test
+
+ci: devenv
+	rm -f backup release-please-config.json
+	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build lint test release-please-config.json
+.PHONY: ci
 
 devenv:
 	docker build --tag backup-ci .
@@ -25,14 +30,9 @@ devenv-test: devenv
 	./bin/devenv-run.sh make test
 .PHONY: devenv-test
 
-devenv-shell:
+devenv-shell: devenv
 	DOCKER_ARGS="--interactive --tty" ./bin/devenv-run.sh /bin/bash
 .PHONY: devenv-shell
-
-ci: devenv
-	rm -f backup
-	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build lint test
-.PHONY: ci
 
 install: backup
 	sudo install backup /usr/local/bin/
