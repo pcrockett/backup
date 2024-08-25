@@ -13,7 +13,7 @@ test: backup minio-start
 .PHONY: test
 
 ci: devenv
-	rm -f backup
+	rm -f backup release-please-config.json
 	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build lint test release-please-config.json
 .PHONY: ci
 
