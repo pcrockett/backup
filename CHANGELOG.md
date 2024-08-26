@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.1](https://github.com/pcrockett/backup/compare/v0.2.0...v0.2.1) (2024-08-26)
+
+
+### Features
+
+* automagically backup when external drive is connected ([#32](https://github.com/pcrockett/backup/issues/32)) ([29f2480](https://github.com/pcrockett/backup/commit/29f2480ef9b5f9182f499105a0c8d3cd60a91fed))
+* more friendly external device not found message ([#29](https://github.com/pcrockett/backup/issues/29)) ([c3e69d0](https://github.com/pcrockett/backup/commit/c3e69d0edffd7bcf2924a89e2b1be8fe476a6eb1))
+
+
+### Bug Fixes
+
+* **ci:** prevent apt from cleaning up download cache ([#31](https://github.com/pcrockett/backup/issues/31)) ([ab07bed](https://github.com/pcrockett/backup/commit/ab07bed8c27adaeab5af504b0569a51b9aaa3270))
+
 ## [0.2.0](https://github.com/pcrockett/backup/compare/v0.1.3...v0.2.0) (2024-08-25)
 
 
