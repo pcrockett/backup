@@ -16,8 +16,6 @@ fi
 
 config:read
 
-ENCODED_FILESYSTEM_UUID="${EXTERNAL_FILESYSTEM_UUID//-/\\x2d}"
-
 AUTOMAGIC_SCRIPT="$(cat <<EOF
 #!/usr/bin/env bash
 set -Eeuo pipefail
@@ -28,6 +26,8 @@ export HOME=/root  # Restic wants to know where HOME is for caching purposes
 # TODO: run / check different destinations in parallel as background jobs?
 EOF
 )"
+
+ENCODED_FILESYSTEM_UUID="${EXTERNAL_FILESYSTEM_UUID//-/\\x2d}"
 
 SYSTEMD_UNIT="$(cat <<EOF
 [Unit]
