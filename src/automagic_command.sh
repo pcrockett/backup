@@ -46,13 +46,14 @@ EOF
 
 (
     umask u=rw,g=r,o=r
+
     echo "${SYSTEMD_UNIT}" > "${SYSTEMD_UNIT_PATH}"
     log:info "Created ${SYSTEMD_UNIT_PATH}"
 
-    umask u=rwx,g=r,o=r
     echo "${AUTOMAGIC_SCRIPT}" > "${AUTOMAGIC_SCRIPT_PATH}"
     log:info "Created ${AUTOMAGIC_SCRIPT_PATH}"
 )
 
+chmod +x "${AUTOMAGIC_SCRIPT_PATH}"
 systemctl daemon-reload
 systemctl enable "${SYSTEMD_UNIT_NAME}.service"
