@@ -65,14 +65,14 @@ commands: [
 	},
 	{
 		name: "mount"
-		help: "Mount your backup repository"
+		help: "Mount a backup repository"
 		args: [
 			#DestRequiredArg,
 		]
 	},
 	{
 		name: "unmount"
-		help: "Unmount your backup repository"
+		help: "Unmount a backup repository"
 		args: [
 			#DestRequiredArg,
 		]
@@ -86,17 +86,28 @@ commands: [
 	},
 	{
 		name: "config"
-		help: "View or edit your backup config"
+		help: "View or edit backup config"
 		flags: [
 			{
 				long:  "--edit"
 				short: "-e"
-				help:  "Open your config in \\$EDITOR"
+				help:  "Open config in \\$EDITOR"
 			},
 			{
 				long:  "--no-pager"
 				short: "-n"
 				help:  "Don't use `bat` or `less`"
+			},
+		]
+	},
+	{
+		name: "automagic"
+		help: "Configure automatic backup when external drive is plugged in"
+		flags: [
+			{
+				long:  "--uninstall"
+				short: "-u"
+				help:  "Remove automatic backup configuration"
 			},
 		]
 	},
