@@ -1,9 +1,5 @@
 # shellcheck shell=bash
 
-if [ "$(id --user)" -ne 0 ]; then
-    panic "You must run as root for this command."
-fi
-
 test -f "$(config:file_path)" || panic "No backup has been configured yet for the root user."
 
 SCRIPT_PATH="/usr/local/bin/backup"
