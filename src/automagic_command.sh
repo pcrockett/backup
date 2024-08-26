@@ -2,8 +2,17 @@
 
 test -f "$(config:file_path)" || panic "No backup has been configured yet for the root user."
 
-THIS_SCRIPT_PATH="/usr/local/bin/backup"  # TODO: Properly determine the location of this script
+THIS_SCRIPT_PATH="$(readlink -f "${0}")"
 AUTOMAGIC_SCRIPT_PATH="$(config:directory_path)/automagic.sh"
+SYSTEMD_UNIT_NAME="automagical-backup"
+SYSTEMD_UNIT_PATH="/etc/systemd/system/${SYSTEMD_UNIT_NAME}.service"
+
+if [ "${args[--uninstall]:-}" != "" ]; then
+    systemctl disable --now "${SYSTEMD_UNIT_NAME}.service"
+    rm -f "${AUTOMAGIC_SCRIPT_PATH}" "${SYSTEMD_UNIT_PATH}"
+    systemctl daemon-reload
+    exit 0
+fi
 
 config:read
 
@@ -35,8 +44,15 @@ ExecStart=${AUTOMAGIC_SCRIPT_PATH}
 EOF
 )"
 
-echo "${SYSTEMD_UNIT}" > /etc/systemd/system/automagical-backup.service
-echo "${AUTOMAGIC_SCRIPT}" > "${AUTOMAGIC_SCRIPT_PATH}"
-chmod +x "${AUTOMAGIC_SCRIPT_PATH}"
+(
+    umask u=rw,g=r,o=r
+    echo "${SYSTEMD_UNIT}" > "${SYSTEMD_UNIT_PATH}"
+    log:info "Created ${SYSTEMD_UNIT_PATH}"
+
+    umask u=rwx,g=r,o=r
+    echo "${AUTOMAGIC_SCRIPT}" > "${AUTOMAGIC_SCRIPT_PATH}"
+    log:info "Created ${AUTOMAGIC_SCRIPT_PATH}"
+)
+
 systemctl daemon-reload
-systemctl enable automagical-backup.service
+systemctl enable "${SYSTEMD_UNIT_NAME}.service"
