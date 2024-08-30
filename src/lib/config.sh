@@ -68,6 +68,7 @@ EXCLUDE=(
     "*~"
     ".cache/"
     ".config/"
+    ".direnv/"
     ".git/"
     ".gradle/"
     ".idea/"
