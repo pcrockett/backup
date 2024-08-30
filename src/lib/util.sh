@@ -38,3 +38,7 @@ util:temp_file() {
 util:sha256sum() {
     sha256sum "${1}" | awk '{print $1}'
 }
+
+util:indent() {
+    sed 's/^/    /'
+}

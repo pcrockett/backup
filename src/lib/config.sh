@@ -55,8 +55,7 @@ EXTERNAL_FILESYSTEM_UUID="Find this with the \`blkid\` command"
 EXTERNAL_BACKUP_DIR="restic-backup"  # save on the external filesystem under restic-backup/ directory
 
 BACKUP_PATHS=(
-    "${HOME}"
-    # TODO
+$(config:get_user_homes | sort | uniq | util:indent)
 )
 
 EXCLUDE=(
@@ -108,4 +107,12 @@ config:setup_restic_env() {
     password_file="$(util:temp_file)"
     echo "${RESTIC_E2EE_PASSWORD}" > "${password_file}"
     export RESTIC_PASSWORD_FILE="${password_file}"
+}
+
+config:get_user_homes() {
+    local logged_in_users
+    read -r -a logged_in_users < <(users)
+    for u in "${logged_in_users[@]}"; do
+        getent passwd "${u}" | cut --delimiter : --field 6
+    done
 }
