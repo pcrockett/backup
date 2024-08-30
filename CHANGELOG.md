@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.2](https://github.com/pcrockett/backup/compare/v0.2.1...v0.2.2) (2024-08-30)
+
+
+### Features
+
+* populate config with user home directories ([#35](https://github.com/pcrockett/backup/issues/35)) ([1afb0f5](https://github.com/pcrockett/backup/commit/1afb0f5550dc9eaed452985b350007dbc5076cdb))
+
+
+### Bug Fixes
+
+* automagic script not executable ([#33](https://github.com/pcrockett/backup/issues/33)) ([8af7f21](https://github.com/pcrockett/backup/commit/8af7f21cf7bf868908309bb3283011cdf4cf68f3))
+
 ## [0.2.1](https://github.com/pcrockett/backup/compare/v0.2.0...v0.2.1) (2024-08-26)
 
 
