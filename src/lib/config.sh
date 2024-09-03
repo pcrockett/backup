@@ -73,7 +73,6 @@ EXCLUDE=(
     ".gradle/"
     ".idea/"
     ".jdks/"
-    ".local/"
     ".npm/"
     ".nvm/"
     ".opam/"
