@@ -1,6 +1,6 @@
 name:    "backup"
 help:    "A very opinionated backup tool"
-version: "0.2.2" // x-release-please-version
+version: "0.2.3" // x-release-please-version
 
 #External: "external"
 #Offsite:  "offsite"

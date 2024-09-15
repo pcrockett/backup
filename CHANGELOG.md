@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.3](https://github.com/pcrockett/backup/compare/v0.2.2...v0.2.3) (2024-09-15)
+
+
+### Features
+
+* automagic backup hooks ([#36](https://github.com/pcrockett/backup/issues/36)) ([ee0fca3](https://github.com/pcrockett/backup/commit/ee0fca3128799a0db4e2acbfd7edf2690e9fc599))
+
+
+### Bug Fixes
+
+* ignore list tweaks ([#37](https://github.com/pcrockett/backup/issues/37)) ([3c9b35b](https://github.com/pcrockett/backup/commit/3c9b35b358b3ba2108cd03df969d23eb9d25d777))
+
 ## [0.2.2](https://github.com/pcrockett/backup/compare/v0.2.1...v0.2.2) (2024-08-30)
 
 
