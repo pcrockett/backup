@@ -41,7 +41,6 @@ asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
 asdf plugin add cue && \
 asdf plugin add shellcheck
 
-
 FROM base AS devenv
 SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 
