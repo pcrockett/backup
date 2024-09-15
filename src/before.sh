@@ -25,7 +25,7 @@ TRAPS=(
 on_exit() {
     for trap in "${TRAPS[@]}"; do
         # log:info "Running \`${trap}\`..."
-        eval "${trap}"
+        eval "${trap}" || true
     done
 }
 trap 'on_exit' SIGINT SIGTERM EXIT
