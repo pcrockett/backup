@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/pcrockett/backup/compare/v0.2.3...v0.2.4) (2024-09-15)
+
+
+### Bug Fixes
+
+* make sure all traps run ([#39](https://github.com/pcrockett/backup/issues/39)) ([00c35f4](https://github.com/pcrockett/backup/commit/00c35f4c8da048ccd028c4e82e45d6d175663ab3))
+
 ## [0.2.3](https://github.com/pcrockett/backup/compare/v0.2.2...v0.2.3) (2024-09-15)
 
 
