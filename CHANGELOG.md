@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.5](https://github.com/pcrockett/backup/compare/v0.2.4...v0.2.5) (2024-11-11)
+
+
+### Bug Fixes
+
+* **ci:** libffi error ([#44](https://github.com/pcrockett/backup/issues/44)) ([caf1507](https://github.com/pcrockett/backup/commit/caf150798fafc4be01b18e7ff7efc9e959651e76))
+* **ci:** minio start race condition on slower devices ([#41](https://github.com/pcrockett/backup/issues/41)) ([933e110](https://github.com/pcrockett/backup/commit/933e110c20db6d48c3a421d8ea22aead74b1b9d4))
+
 ## [0.2.4](https://github.com/pcrockett/backup/compare/v0.2.3...v0.2.4) (2024-09-15)
 
 
