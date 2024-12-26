@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/pcrockett/backup/compare/v0.2.5...v0.2.6) (2024-12-26)
+
+
+### Bug Fixes
+
+* **config:** restrict default permissions ([#45](https://github.com/pcrockett/backup/issues/45)) ([d652166](https://github.com/pcrockett/backup/commit/d652166b4b101f4dac556600c73b68ef9df827fa))
+
 ## [0.2.5](https://github.com/pcrockett/backup/compare/v0.2.4...v0.2.5) (2024-11-11)
 
 
