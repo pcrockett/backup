@@ -61,7 +61,11 @@ AWS_SECRET_ACCESS_KEY="TODO"
 S3_REPOSITORY_URL="s3:https://example.com/bucket-name"
 
 # External (ex: USB drive) backup destination config
-EXTERNAL_FILESYSTEM_UUID="Find this with the \`blkid\` command"
+# You can use this command to determine the UUID for any filesystem on your machine:
+#
+#     lsblk --output PATH,SIZE,UUID
+#
+EXTERNAL_FILESYSTEM_UUID="Find this with the \`lsblk\` command"
 EXTERNAL_BACKUP_DIR="restic-backup"  # save on the external filesystem under restic-backup/ directory
 
 BACKUP_PATHS=(
