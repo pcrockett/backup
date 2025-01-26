@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.7](https://github.com/pcrockett/backup/compare/v0.2.6...v0.2.7) (2025-01-26)
+
+
+### Features
+
+* **config:** better instructions to find filesystem UUID ([#48](https://github.com/pcrockett/backup/issues/48)) ([b5a0159](https://github.com/pcrockett/backup/commit/b5a0159bb2fba4477100285ec6416e47970c0b2f))
+
+
+### Bug Fixes
+
+* **automagic:** render "${?}" in automagic script instead of "0" ([#50](https://github.com/pcrockett/backup/issues/50)) ([1dd68de](https://github.com/pcrockett/backup/commit/1dd68deda98f5a1ffab9ecbbd4cddee9e316aa98))
+
 ## [0.2.6](https://github.com/pcrockett/backup/compare/v0.2.5...v0.2.6) (2024-12-26)
 
 
