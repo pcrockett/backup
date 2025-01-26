@@ -37,7 +37,7 @@ run_and_check() {
 if run_and_check; then
     export AUTOMAGIC_BACKUP_RESULT=0
 else
-    export AUTOMAGIC_BACKUP_RESULT=${?}
+    export AUTOMAGIC_BACKUP_RESULT=\${?}
 fi
 
 "${AFTER_HOOK_SCRIPT_PATH}" || true
