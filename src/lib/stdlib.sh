@@ -2,7 +2,7 @@
 
 panic() {
     # for when you really shouldn't keep calm and carry on
-    log:red "FATAL: ${*}\n" >&2
+    log:error "FATAL: ${*}" >&2
     exit 1
 }
 
