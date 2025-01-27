@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.8](https://github.com/pcrockett/backup/compare/v0.2.7...v0.2.8) (2025-01-27)
+
+
+### Features
+
+* **colors:** use bashly colors lib ([#51](https://github.com/pcrockett/backup/issues/51)) ([7faaa71](https://github.com/pcrockett/backup/commit/7faaa71a9f0926712d37e0fc8b4148a994496e55))
+
 ## [0.2.7](https://github.com/pcrockett/backup/compare/v0.2.6...v0.2.7) (2025-01-26)
 
 
