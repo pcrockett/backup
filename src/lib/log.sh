@@ -5,17 +5,17 @@ log:info() {
 }
 
 log:success() {
-    colors:green_bold "${*}\n"
+    colors:green_bold "${*}"
 }
 
 log:error() {
-    colors:red_bold "${*}\n"
+    colors:red_bold "${*}"
 }
 
 log:step() {
-    colors:cyan "--> ${*}\n"
+    colors:cyan "--> ${*}"
 }
 
 log:attention() {
-    colors:magenta_bold "${*}\n"
+    colors:magenta_bold "${*}"
 }

@@ -12,9 +12,9 @@ colors:print_in_color() {
   local color="$1"
   shift
   if [[ "${NO_COLOR:-}" == "" ]]; then
-    printf "$color%b\e[0m" "$*"
+    printf "$color%b\e[0m\n" "$*"
   else
-    printf "%b" "$*"
+    printf "%b\n" "$*"
   fi
 }
 
