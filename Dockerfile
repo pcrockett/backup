@@ -11,7 +11,7 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 rm -f /etc/apt/apt.conf.d/docker-clean && \
 apt-get update && \
-apt-get install --yes --no-install-recommends curl ca-certificates git libffi-dev
+apt-get install --yes --no-install-recommends curl ca-certificates git
 
 
 FROM quay.io/minio/minio AS minio
@@ -51,7 +51,7 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
 mkdir /app && \
 mkdir /data && \
 apt-get install --yes --no-install-recommends \
-    make build-essential procps fuse3 libyaml-dev ruby-dev
+    make build-essential procps fuse3 libyaml-dev ruby-dev libffi-dev
 
 COPY --from=minio /usr/bin/minio /usr/local/bin
 COPY --from=minio /usr/bin/mc /usr/local/bin
