@@ -11,7 +11,7 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 rm -f /etc/apt/apt.conf.d/docker-clean && \
 apt-get update && \
-apt-get install --yes --no-install-recommends curl ca-certificates git libffi-dev
+apt-get install --yes --no-install-recommends curl ca-certificates git
 
 
 FROM quay.io/minio/minio AS minio
@@ -34,8 +34,7 @@ SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 # don't care about "source" warning in shellcheck
 # hadolint ignore=SC1091
 RUN \
-curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- docker/asdf && \
-. "${ASDF_DIR}/asdf.sh" && \
+curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- asdf && \
 asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
 asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
 asdf plugin add cue && \
@@ -51,11 +50,12 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
 mkdir /app && \
 mkdir /data && \
 apt-get install --yes --no-install-recommends \
-    make build-essential procps fuse3 libyaml-dev ruby-dev
+    make build-essential procps fuse3 libyaml-dev ruby-dev libffi-dev
 
 COPY --from=minio /usr/bin/minio /usr/local/bin
 COPY --from=minio /usr/bin/mc /usr/local/bin
 COPY --from=restic /usr/local/bin/restic /usr/local/bin
+COPY --from=asdf /usr/local/bin/asdf /usr/local/bin
 COPY --from=asdf "${ASDF_DIR}" "${ASDF_DIR}"
 
 WORKDIR /app
