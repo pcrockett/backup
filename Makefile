@@ -34,6 +34,11 @@ devenv-shell: devenv
 	DOCKER_ARGS="--interactive --tty" ./bin/devenv-run.sh /bin/bash
 .PHONY: devenv-shell
 
+pull:
+	grep --only-matching --perl-regexp '(?<=FROM )\S*/\S*(?= AS)' Dockerfile \
+		| xargs -L 1 docker pull
+.PHONY: pull
+
 install: backup
 	sudo install backup /usr/local/bin/
 .PHONY: install
