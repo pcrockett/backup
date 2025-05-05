@@ -1,4 +1,4 @@
-FROM docker.io/library/debian:12-slim AS base
+FROM docker.io/library/debian:trixie-slim AS base
 SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -34,10 +34,11 @@ SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 # don't care about "source" warning in shellcheck
 # hadolint ignore=SC1091
 RUN \
+git config --global advice.detachedHead false && \
 curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- asdf && \
 asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
 asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
-asdf plugin add cue && \
+asdf plugin add cue https://github.com/asdf-community/asdf-cue.git && \
 asdf plugin add shellcheck https://github.com/pcrockett/asdf-shellcheck.git
 
 FROM base AS devenv
