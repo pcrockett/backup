@@ -15,6 +15,3 @@ indent_size = 2
 
 [{Makefile,makefile,GNUmakefile}]
 indent_style = tab
-
-[*.cue]
-indent_style = tab

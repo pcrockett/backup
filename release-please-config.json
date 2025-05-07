@@ -1,16 +1,16 @@
 {
-    "release-type": "simple",
-    "extra-files": [
-        "src/bashly.cue"
-    ],
     "bump-minor-pre-major": true,
     "bump-patch-for-minor-pre-major": true,
-    "prerelease-type": "beta",
-    "draft": false,
-    "skip-github-release": false,
-    "release-search-depth": 400,
     "commit-search-depth": 500,
+    "draft": false,
+    "extra-files": [
+        "src/bashly.hcl"
+    ],
     "packages": {
         ".": {}
-    }
+    },
+    "prerelease-type": "beta",
+    "release-search-depth": 400,
+    "release-type": "simple",
+    "skip-github-release": false
 }
