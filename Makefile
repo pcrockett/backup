@@ -63,10 +63,8 @@ backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
 	sed --in-place 's|\[tag:|[ref:|g' backup
 
-src/bashly.yml: src/bashly.cue
-	cue fmt src/bashly.cue
-	cue export --out yaml src/bashly.cue > src/bashly.yml
+src/bashly.yml: src/bashly.hcl
+	hcl2json src/bashly.hcl > src/bashly.yml
 
-release-please-config.json: release-please-config.cue
-	cue fmt release-please-config.cue
-	cue export --out json release-please-config.cue > release-please-config.json
+release-please-config.json: release-please-config.hcl
+	hcl2json release-please-config.hcl > release-please-config.json

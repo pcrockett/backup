@@ -40,10 +40,9 @@ SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 # hadolint ignore=SC1091
 RUN \
 git config --global advice.detachedHead false && \
-curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- asdf && \
+curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- asdf hcl2json && \
 asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
 asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
-asdf plugin add cue https://github.com/asdf-community/asdf-cue.git && \
 asdf plugin add shellcheck https://github.com/pcrockett/asdf-shellcheck.git && \
 asdf plugin add shfmt https://github.com/pcrockett/asdf-shfmt.git
 
@@ -64,6 +63,7 @@ COPY --from=minio /usr/bin/mc /usr/local/bin
 COPY --from=restic /usr/local/bin/restic /usr/local/bin
 COPY --from=asdf /usr/local/bin/asdf /usr/local/bin
 COPY --from=asdf "${ASDF_DIR}" "${ASDF_DIR}"
+COPY --from=asdf /usr/local/bin/hcl2json /usr/local/bin
 
 WORKDIR /app
 COPY .tool-versions .
