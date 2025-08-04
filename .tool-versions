@@ -2,3 +2,4 @@ bashly 1.2.12
 bats 1.11.1
 cue 0.12.1
 shellcheck 0.10.0
+shfmt 3.12.0

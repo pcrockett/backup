@@ -39,7 +39,8 @@ curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- asdf && \
 asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
 asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
 asdf plugin add cue https://github.com/asdf-community/asdf-cue.git && \
-asdf plugin add shellcheck https://github.com/pcrockett/asdf-shellcheck.git
+asdf plugin add shellcheck https://github.com/pcrockett/asdf-shellcheck.git && \
+asdf plugin add shfmt https://github.com/pcrockett/asdf-shfmt.git
 
 FROM base AS devenv
 SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]

@@ -10,7 +10,7 @@ AFTER_HOOK_SCRIPT_PATH="${AUTOMAGIC_HOOKS_DIR}/after.sh"
 SYSTEMD_UNIT_NAME="automagical-backup"
 SYSTEMD_UNIT_PATH="/etc/systemd/system/${SYSTEMD_UNIT_NAME}.service"
 
-if [ "${args[--uninstall]:-}" != "" ]; then
+if [ "${args['--uninstall']:-}" != "" ]; then
     systemctl disable --now "${SYSTEMD_UNIT_NAME}.service"
     rm -f "${AUTOMAGIC_SCRIPT_PATH}" "${SYSTEMD_UNIT_PATH}"
     rm -rf "${AUTOMAGIC_HOOKS_DIR}"

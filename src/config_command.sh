@@ -8,7 +8,7 @@ if [ ! -f "${config_file}" ]; then
 fi
 
 display_config() {
-    if [ "${args[--no-pager]:-}" != "" ]; then
+    if [ "${args['--no-pager']:-}" != "" ]; then
         cat "${config_file}"
         return
     fi
@@ -26,7 +26,7 @@ edit_config() {
     "${EDITOR:-nano}" "${config_file}"
 }
 
-if [ "${args[--edit]:-}" == "" ]; then
+if [ "${args['--edit']:-}" == "" ]; then
     display_config
 else
     edit_config
