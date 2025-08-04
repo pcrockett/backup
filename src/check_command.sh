@@ -3,7 +3,7 @@
 
 config:read
 
-path_to_check="${args[--file]:-}"
+path_to_check="${args['--file']:-}"
 check_failures=()
 
 if [ "${path_to_check}" != "" ]; then
