@@ -91,7 +91,7 @@ commands: [
 			{
 				long:  "--edit"
 				short: "-e"
-				help:  "Open config in \\$EDITOR"
+				help:  #"Open config in \$EDITOR"#
 			},
 			{
 				long:  "--no-pager"
