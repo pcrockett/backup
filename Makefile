@@ -54,6 +54,7 @@ minio-stop:
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
 	sed --in-place 's|\[tag:|[ref:|g' backup
+	shfmt --indent 2 --case-indent --write backup
 
 src/bashly.yml: src/bashly.cue
 	cue fmt src/bashly.cue
