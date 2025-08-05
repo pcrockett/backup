@@ -8,11 +8,11 @@ LOG_FILE="${STATE_DIR}/minio-logs.txt"
 mkdir --parent "${STATE_DIR}"
 
 if [ -f "${PID_FILE}" ]; then
-    # service is already running; run minio-stop.sh to kill it
-    exit 0
+  # service is already running; run minio-stop.sh to kill it
+  exit 0
 fi
-minio server "${MINIO_DATA_DIR}" &> "${LOG_FILE}" &
-echo "${!}" > "${PID_FILE}"
+minio server "${MINIO_DATA_DIR}" &>"${LOG_FILE}" &
+echo "${!}" >"${PID_FILE}"
 echo "Minio logs are being stored in ${LOG_FILE}"
 
 # HACK: on my slow laptop, the first test fails because it starts

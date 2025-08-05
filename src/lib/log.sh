@@ -1,21 +1,21 @@
 # shellcheck shell=bash
 
 log:info() {
-    echo "${*}"
+  echo "${*}"
 }
 
 log:success() {
-    colors:green_bold "${*}"
+  colors:green_bold "${*}"
 }
 
 log:error() {
-    colors:red_bold "${*}"
+  colors:red_bold "${*}"
 }
 
 log:step() {
-    colors:cyan "--> ${*}"
+  colors:cyan "--> ${*}"
 }
 
 log:attention() {
-    colors:magenta_bold "${*}"
+  colors:magenta_bold "${*}"
 }
