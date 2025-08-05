@@ -7,6 +7,10 @@
 
 * lint error introduced by upstream change ([#59](https://github.com/pcrockett/backup/issues/59)) ([2481add](https://github.com/pcrockett/backup/commit/2481added8ef2cb403681a80ea9abdf972afa824))
 
+### Miscellaneous Chores
+
+* format script with shfmt ([#61](https://github.com/pcrockett/backup/pull/61)) ([78617a8](https://github.com/pcrockett/backup/commit/78617a84be8ffbb432ffddd343a82c8b4c2de9ac))
+
 ## [0.2.8](https://github.com/pcrockett/backup/compare/v0.2.7...v0.2.8) (2025-01-27)
 
 
