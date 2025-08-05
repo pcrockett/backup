@@ -11,16 +11,17 @@ SYSTEMD_UNIT_NAME="automagical-backup"
 SYSTEMD_UNIT_PATH="/etc/systemd/system/${SYSTEMD_UNIT_NAME}.service"
 
 if [ "${args['--uninstall']:-}" != "" ]; then
-    systemctl disable --now "${SYSTEMD_UNIT_NAME}.service"
-    rm -f "${AUTOMAGIC_SCRIPT_PATH}" "${SYSTEMD_UNIT_PATH}"
-    rm -rf "${AUTOMAGIC_HOOKS_DIR}"
-    systemctl daemon-reload
-    exit 0
+  systemctl disable --now "${SYSTEMD_UNIT_NAME}.service"
+  rm -f "${AUTOMAGIC_SCRIPT_PATH}" "${SYSTEMD_UNIT_PATH}"
+  rm -rf "${AUTOMAGIC_HOOKS_DIR}"
+  systemctl daemon-reload
+  exit 0
 fi
 
 config:read
 
-AUTOMAGIC_SCRIPT="$(cat <<EOF
+AUTOMAGIC_SCRIPT="$(
+  cat <<EOF
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
@@ -46,7 +47,8 @@ exit \${AUTOMAGIC_BACKUP_RESULT}
 EOF
 )"
 
-AFTER_HOOK_SCRIPT="$(cat <<EOF
+AFTER_HOOK_SCRIPT="$(
+  cat <<EOF
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
@@ -58,8 +60,8 @@ set -Eeuo pipefail
 EOF
 )"
 
-
-BEFORE_HOOK_SCRIPT="$(cat <<EOF
+BEFORE_HOOK_SCRIPT="$(
+  cat <<EOF
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
@@ -70,7 +72,8 @@ EOF
 
 ENCODED_FILESYSTEM_UUID="${EXTERNAL_FILESYSTEM_UUID//-/\\x2d}"
 
-SYSTEMD_UNIT="$(cat <<EOF
+SYSTEMD_UNIT="$(
+  cat <<EOF
 [Unit]
 Description=Automagical Backup
 DefaultDependencies=false
@@ -86,22 +89,22 @@ EOF
 )"
 
 (
-    umask u=rw,g=,o=
+  umask u=rw,g=,o=
 
-    mkdir --parent "${AUTOMAGIC_HOOKS_DIR}"
-    echo "${AFTER_HOOK_SCRIPT}" > "${AFTER_HOOK_SCRIPT_PATH}"
-    echo "${BEFORE_HOOK_SCRIPT}" > "${BEFORE_HOOK_SCRIPT_PATH}"
-    echo "${AUTOMAGIC_SCRIPT}" > "${AUTOMAGIC_SCRIPT_PATH}"
-    log:info "Created ${AUTOMAGIC_SCRIPT_PATH}"
+  mkdir --parent "${AUTOMAGIC_HOOKS_DIR}"
+  echo "${AFTER_HOOK_SCRIPT}" >"${AFTER_HOOK_SCRIPT_PATH}"
+  echo "${BEFORE_HOOK_SCRIPT}" >"${BEFORE_HOOK_SCRIPT_PATH}"
+  echo "${AUTOMAGIC_SCRIPT}" >"${AUTOMAGIC_SCRIPT_PATH}"
+  log:info "Created ${AUTOMAGIC_SCRIPT_PATH}"
 )
 
 chmod +x "${AUTOMAGIC_SCRIPT_PATH}" "${BEFORE_HOOK_SCRIPT_PATH}" "${AFTER_HOOK_SCRIPT_PATH}"
 
 (
-    umask u=rw,g=r,o=r
+  umask u=rw,g=r,o=r
 
-    echo "${SYSTEMD_UNIT}" > "${SYSTEMD_UNIT_PATH}"
-    log:info "Created ${SYSTEMD_UNIT_PATH}"
+  echo "${SYSTEMD_UNIT}" >"${SYSTEMD_UNIT_PATH}"
+  log:info "Created ${SYSTEMD_UNIT_PATH}"
 )
 
 systemctl daemon-reload

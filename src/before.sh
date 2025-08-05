@@ -6,7 +6,7 @@
 ## before running any command (but after processing its arguments).
 
 if [ "$(id --user)" -ne 0 ]; then
-    panic "This command must be run as root."
+  panic "This command must be run as root."
 fi
 
 readonly RUN_STATE_DIR="/run/backup"
@@ -19,13 +19,13 @@ readonly OFFSITE_BACKUP_DEST="offsite"
 
 # don't modify this yourself. instead use [ref:add_trap].
 TRAPS=(
-    "rm -rf $(util:escape_value "${BACKUP_TEMP_DIR}")"
+  "rm -rf $(util:escape_value "${BACKUP_TEMP_DIR}")"
 )
 
 on_exit() {
-    for trap in "${TRAPS[@]}"; do
-        # log:info "Running \`${trap}\`..."
-        eval "${trap}" || true
-    done
+  for trap in "${TRAPS[@]}"; do
+    # log:info "Running \`${trap}\`..."
+    eval "${trap}" || true
+  done
 }
 trap 'on_exit' SIGINT SIGTERM EXIT

@@ -4,8 +4,8 @@
 config:read
 
 if [ "${args[destination]}" == "${EXTERNAL_BACKUP_DEST}" ]; then
-    external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
-    external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
+  external:mount_device_by_uuid "${EXTERNAL_FILESYSTEM_UUID}"
+  external:unmount_on_exit "${EXTERNAL_FILESYSTEM_UUID}"
 fi
 
 config:setup_restic_env "${args[destination]}"
