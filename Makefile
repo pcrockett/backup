@@ -1,3 +1,5 @@
+ALL_SCRIPTS = ./backup src/*.sh src/lib/*.sh tests/*.sh tests/*.bats bin/*.sh
+
 all: ci
 .PHONY: all
 
@@ -5,8 +7,12 @@ build: backup
 .PHONY: build
 
 lint: backup
-	shellcheck ./backup src/*.sh src/lib/*.sh tests/*.sh tests/*.bats bin/*.sh
+	shellcheck $(ALL_SCRIPTS)
 .PHONY: lint
+
+format: backup
+	shfmt --indent 2 --case-indent --write $(ALL_SCRIPTS)
+.PHONY: format
 
 test: backup minio-start
 	bats --verbose-run --print-output-on-failure ./tests
@@ -14,7 +20,7 @@ test: backup minio-start
 
 ci: devenv
 	rm -f backup release-please-config.json
-	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build lint test release-please-config.json
+	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build format lint test release-please-config.json
 .PHONY: ci
 
 devenv:
@@ -56,7 +62,6 @@ minio-stop:
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
 	sed --in-place 's|\[tag:|[ref:|g' backup
-	shfmt --indent 2 --case-indent --write backup
 
 src/bashly.yml: src/bashly.cue
 	cue fmt src/bashly.cue
