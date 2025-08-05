@@ -2,6 +2,11 @@ FROM docker.io/library/debian:trixie-slim AS base
 SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 
 ARG DEBIAN_FRONTEND=noninteractive
+
+# my yolo script and asdf plugin commands generate a lot of github http requests
+# this allows us to optionally authenticate those requests
+ARG GITHUB_TOKEN
+
 ENV ASDF_DIR=/root/.asdf \
     PATH="/root/.asdf/shims:/root/.asdf/bin:${PATH}"
 

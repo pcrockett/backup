@@ -18,7 +18,9 @@ ci: devenv
 .PHONY: ci
 
 devenv:
-	docker build --tag backup-ci .
+	docker build \
+		--build-arg "GITHUB_TOKEN=${GITHUB_TOKEN}" \
+		--tag backup-ci .
 .PHONY: devenv
 
 devenv-build: devenv
