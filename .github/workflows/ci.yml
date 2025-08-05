@@ -17,4 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: make ci
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: make ci
