@@ -63,6 +63,10 @@ release:
 	./bin/release.sh
 .PHONY: release
 
+changelog:
+	git cliff --tag "$(shell git cliff --bumped-version)" > CHANGELOG.md
+.PHONY: changelog
+
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
 	sed --in-place 's|\[tag:|[ref:|g' backup
