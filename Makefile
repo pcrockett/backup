@@ -59,6 +59,10 @@ minio-stop:
 	./tests/minio-stop.sh
 .PHONY: minio-stop
 
+release:
+	./bin/release.sh
+.PHONY: release
+
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
 	sed --in-place 's|\[tag:|[ref:|g' backup
