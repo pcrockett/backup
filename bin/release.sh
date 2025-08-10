@@ -14,12 +14,17 @@ ensure_working_dir_clean() {
 }
 
 init() {
+  if [ "${GITHUB_TOKEN:-}" = "" ]; then
+    # if we're running in CI, we may have this via the GH_TOKEN env variable
+    export GITHUB_TOKEN="${GH_TOKEN:-}"
+  fi
+
   git fetch --tags "${ORIGIN_NAME}"
   test "$(git branch --show-current)" = "${MAIN_BRANCH}" || panic "Must be on main branch."
   ensure_working_dir_clean
   test \
-    "$(git rev-parse "${MAIN_BRANCH}")" = "$(git rev-parse "${ORIGIN_NAME}/${MAIN_BRANCH}")" \
-    || panic "main branch is not up-to-date with ${ORIGIN_NAME}."
+    "$(git rev-parse "${MAIN_BRANCH}")" = "$(git rev-parse "${ORIGIN_NAME}/${MAIN_BRANCH}")" ||
+    panic "main branch is not up-to-date with ${ORIGIN_NAME}."
 }
 
 main() {
@@ -29,11 +34,11 @@ main() {
   TAG_NAME="v${BACKUP_VERSION}"
 
   # ensure backup script version agrees with conventional commits
-  test "${TAG_NAME}" = "$(git cliff --bumped-version)" \
-    || panic "\`./backup --version\` reports ${TAG_NAME}, should be $(git cliff --bumped-version)."
+  test "${TAG_NAME}" = "$(git cliff --bumped-version)" ||
+    panic "\`./backup --version\` reports ${TAG_NAME}, should be $(git cliff --bumped-version)."
 
   # ensure CHANGELOG.md has all correct entries
-  git cliff --tag "${TAG_NAME}" > CHANGELOG.md  # shouldn't produce any new changes in CHANGELOG
+  git cliff --tag "${TAG_NAME}" >CHANGELOG.md # shouldn't produce any new changes in CHANGELOG
   ensure_working_dir_clean
 
   git tag "${TAG_NAME}"

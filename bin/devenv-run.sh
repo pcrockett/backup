@@ -24,5 +24,4 @@ docker run \
 
 if [ "${COPY_ARTIFACTS:-}" != "" ]; then
   docker cp "${CONTAINER_NAME}":/app/backup .
-  docker cp "${CONTAINER_NAME}":/app/release-please-config.json .
 fi

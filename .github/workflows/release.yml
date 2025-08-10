@@ -1,23 +1,17 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  release-please:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@a02a34c4d625f9be7cb89156071d8567266a2445
-        with:
-          config-file: release-please-config.json
       - uses: actions/checkout@v4
       - name: upload release artifacts
-        run: bin/upload-release-artifacts.sh
+        run: bin/release.sh
         env:
           GH_TOKEN: ${{ github.token }}

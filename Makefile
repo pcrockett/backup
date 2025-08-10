@@ -19,8 +19,8 @@ test: backup minio-start
 .PHONY: test
 
 ci: devenv
-	rm -f backup release-please-config.json
-	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build format lint test release-please-config.json
+	rm -f backup
+	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build format lint test
 .PHONY: ci
 
 devenv:
@@ -74,7 +74,3 @@ backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 src/bashly.yml: src/bashly.cue
 	cue fmt src/bashly.cue
 	cue export --out yaml src/bashly.cue > src/bashly.yml
-
-release-please-config.json: release-please-config.cue
-	cue fmt release-please-config.cue
-	cue export --out json release-please-config.cue > release-please-config.json
