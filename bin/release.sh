@@ -20,11 +20,11 @@ init() {
   fi
 
   git fetch --tags "${ORIGIN_NAME}"
-  test "$(git branch --show-current)" = "${MAIN_BRANCH}" || panic "Must be on main branch."
+  test "$(git branch --show-current)" = "${MAIN_BRANCH}" || panic "Must be on ${MAIN_BRANCH}."
   ensure_working_dir_clean
   test \
     "$(git rev-parse "${MAIN_BRANCH}")" = "$(git rev-parse "${ORIGIN_NAME}/${MAIN_BRANCH}")" ||
-    panic "main branch is not up-to-date with ${ORIGIN_NAME}."
+    panic "${MAIN_BRANCH} is not up-to-date with ${ORIGIN_NAME}."
 }
 
 main() {
