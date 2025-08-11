@@ -1,3 +1,28 @@
+## [0.2.9] - 2025-08-11
+
+### 🐛 Bug Fixes
+
+* Lint error introduced by upstream change (#59)
+
+### 🚜 Refactor
+
+* Release infra (#67)
+
+### ⚙️ Miscellaneous Tasks
+
+* *(ci)* Use my asdf-shellcheck fork (#53)
+* *(ci)* Dockerfile update (#55)
+* Bump googleapis/release-please-action from 4.1.3 to 4.1.4 (#54)
+* Makefile `pull` target to pull docker images (#56)
+* Bump googleapis/release-please-action from 4.1.4 to 4.2.0 (#57)
+* *(ci)* Update bashly, cue, ruby / debian (#58)
+* *(ci)* Shfmt (#61)
+* *(ci)* Authenticate github requests (#63)
+* Format source code, not just build outputs (#62)
+* Add lsp directive to settings file (#64)
+* Format source with shfmt (#65)
+* Add format commit to .git-blame-ignore-revs (#66)
+
 ## [0.2.8] - 2025-01-27
 
 ### 🚀 Features
