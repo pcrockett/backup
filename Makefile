@@ -60,7 +60,7 @@ minio-stop:
 .PHONY: minio-stop
 
 release:
-	./bin/release.sh
+	gh workflow run release.yml
 .PHONY: release
 
 changelog:

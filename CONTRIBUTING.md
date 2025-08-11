@@ -20,8 +20,10 @@ for your day-to-day committing._ You just need to make sure all _pull requests_ 
 Conventional Commit title.
 
 If you did your Conventional Commits correctly, you can create a release PR with a
-version bump and a `make changelog`. Once that PR is merged, you can run the "Release"
-GitHub Actions workflow.
+version bump and a `make changelog`. Make sure the final commit message looks like
+`chore(release): ...`.
+
+After that's merged, you can run the Release workflow via `make release`.
 
 ## Testing
 

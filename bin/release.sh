@@ -46,7 +46,6 @@ main() {
   gh release create "${TAG_NAME}" \
     --latest \
     --generate-notes \
-    --draft \
     --fail-on-no-commits \
     --verify-tag
   gh release upload "${TAG_NAME}" ./backup
