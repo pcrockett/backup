@@ -14,6 +14,10 @@ jobs:
         with:
           fetch-depth: 0  # get everything
           fetch-tags: true
+      - name: install git-cliff
+        run: |
+          curl -SsfL https://philcrockett.com/yolo/v1.sh \
+              | bash -s -- git-cliff
       - name: upload release artifacts
         run: bin/release.sh
         env:
