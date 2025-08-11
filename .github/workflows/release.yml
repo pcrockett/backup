@@ -15,10 +15,12 @@ jobs:
           fetch-depth: 0  # get everything
           fetch-tags: true
       - name: install git-cliff
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           curl -SsfL https://philcrockett.com/yolo/v1.sh \
               | bash -s -- git-cliff
       - name: upload release artifacts
         run: bin/release.sh
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
