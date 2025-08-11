@@ -1,23 +1,26 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  release-please:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@a02a34c4d625f9be7cb89156071d8567266a2445
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
-          config-file: release-please-config.json
-      - uses: actions/checkout@v4
-      - name: upload release artifacts
-        run: bin/upload-release-artifacts.sh
+          fetch-depth: 0  # get everything
+          fetch-tags: true
+      - name: install git-cliff
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -SsfL https://philcrockett.com/yolo/v1.sh \
+              | bash -s -- git-cliff
+      - name: upload release artifacts
+        run: bin/release.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
