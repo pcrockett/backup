@@ -19,11 +19,13 @@ partially automate the release process. _You don't need to use Conventional Comm
 for your day-to-day committing._ You just need to make sure all _pull requests_ have a
 Conventional Commit title.
 
-If you did your Conventional Commits correctly, you can create a release PR with a
-version bump and a `make changelog`. Make sure the final commit message looks like
-`chore(release): ...`.
+If you did your Conventional Commits correctly,
 
-After that's merged, you can run the Release workflow via `make release`.
+1. `make prepare-release`
+2. `git add . && git commit`
+3. `make release-pr`
+4. merge the PR
+5. `make release`
 
 ## Testing
 

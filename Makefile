@@ -12,6 +12,7 @@ lint: backup
 
 format: backup
 	shfmt --indent 2 --case-indent --write $(ALL_SCRIPTS)
+	cue fmt ./src/bashly.cue
 .PHONY: format
 
 test: backup minio-start
@@ -59,13 +60,17 @@ minio-stop:
 	./tests/minio-stop.sh
 .PHONY: minio-stop
 
+prepare-release:
+	./bin/prepare-release.sh
+.PHONY: prepare-release
+
+release-pr:
+	gh pr create --title "chore(release): prepare $(shell git cliff --bumped-version)" --body "Version bump and changelog update"
+.PHONY: release-pr
+
 release:
 	gh workflow run release.yml
 .PHONY: release
-
-changelog:
-	git cliff --tag "$(shell git cliff --bumped-version)" > CHANGELOG.md
-.PHONY: changelog
 
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
