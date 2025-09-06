@@ -14,11 +14,6 @@ ensure_working_dir_clean() {
 }
 
 init() {
-  if [ "${GITHUB_TOKEN:-}" = "" ]; then
-    # if we're running in CI, we may have this via the GH_TOKEN env variable
-    export GITHUB_TOKEN="${GH_TOKEN:-}"
-  fi
-
   git fetch --tags "${ORIGIN_NAME}"
   test "$(git branch --show-current)" = "${MAIN_BRANCH}" || panic "Must be on ${MAIN_BRANCH}."
   ensure_working_dir_clean
