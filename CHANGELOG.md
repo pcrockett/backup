@@ -1,3 +1,11 @@
+## [0.2.10] - 2025-09-06
+
+### ⚙️ Miscellaneous Tasks
+
+* Bump actions/checkout from 4 to 5 (#69)
+* Bump amannn/action-semantic-pull-request from 5.5.3 to 6.0.1 (#70)
+* *(ci)* Update / comment gh action version
+
 ## [0.2.9] - 2025-08-11
 
 ### 🐛 Bug Fixes
