@@ -10,6 +10,10 @@ lint: backup
 	shellcheck $(ALL_SCRIPTS)
 .PHONY: lint
 
+tagref:
+	tagref
+.PHONY: tagref
+
 format: backup
 	shfmt --indent 2 --case-indent --write $(ALL_SCRIPTS)
 	cue fmt ./src/bashly.cue
@@ -21,7 +25,7 @@ test: backup minio-start
 
 ci: devenv
 	rm -f backup
-	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build format lint test
+	COPY_ARTIFACTS=1 ./bin/devenv-run.sh make build format lint tagref test
 .PHONY: ci
 
 devenv:
