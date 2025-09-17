@@ -1,5 +1,3 @@
-ALL_SCRIPTS = ./backup src/*.sh src/lib/*.sh tests/*.sh tests/*.bats bin/*.sh
-
 all: ci
 .PHONY: all
 
@@ -7,7 +5,7 @@ build: backup
 .PHONY: build
 
 lint: backup
-	shellcheck $(ALL_SCRIPTS)
+	pre-commit run --all-files --color always
 .PHONY: lint
 
 tagref:
@@ -15,7 +13,7 @@ tagref:
 .PHONY: tagref
 
 format: backup
-	shfmt --write $(ALL_SCRIPTS)
+	pre-commit run shfmt --all-files
 	cue fmt ./src/bashly.cue
 .PHONY: format
 

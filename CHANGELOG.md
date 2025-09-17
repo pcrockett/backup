@@ -202,4 +202,3 @@
 * *(tests)* Add more "check" tests (#3)
 * Update build dependencies (#6)
 * *(main)* Release 0.1.0 (#2)
-
