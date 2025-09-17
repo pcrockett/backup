@@ -20,11 +20,15 @@ repos:
     rev: 0cec2598f76713675989870f0c8343cb4d49614d
     hooks:
       - id: gitleaks-system
-  - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.11.0
-    hooks:
-    - id: shellcheck
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.12.0-2
     hooks:
       - id: shfmt
+  - repo: local
+    hooks:
+    - id: shellcheck
+      name: shellcheck
+      entry: shellcheck
+      language: system
+      types:
+        - shell

@@ -44,6 +44,7 @@ curl -SsfL https://philcrockett.com/yolo/v1.sh \
   | bash -s -- asdf tagref actionlint gitleaks && \
 asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
 asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
+asdf plugin add shellcheck https://github.com/pcrockett/asdf-shellcheck.git && \
 asdf plugin add pre-commit https://github.com/pcrockett/asdf-pre-commit.git
 
 FROM base AS devenv
