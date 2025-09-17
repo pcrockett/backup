@@ -16,6 +16,3 @@ binary_next_line = true
 
 [Makefile]
 indent_style = tab
-
-[*.cue]
-indent_style = tab

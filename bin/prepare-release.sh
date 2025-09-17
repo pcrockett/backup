@@ -12,13 +12,12 @@ set -Eeuo pipefail
 #
 # * git
 # * git-cliff
-# * cue
 # * GNU coreutils
 #
 
 init() {
   MAIN_BRANCH=main
-  BASHLY_CONFIG="./src/bashly.cue"
+  BASHLY_CONFIG="./src/bashly.yml"
   BUMPED_TAG="$(git cliff --bumped-version)"
   # strip the leading `v` from the tag name:
   BUMPED_VERSION="$(echo "${BUMPED_TAG}" | cut --characters 2-)"
@@ -36,10 +35,9 @@ create_branch() {
 
 update_version_setting() {
   new_version="${1}"
-  version_pattern='version:[[:space:]]*".*"'
-  version_replacement="version: \"${new_version}\""
+  version_pattern='^version:[[:space:]]*.*$'
+  version_replacement="version: ${new_version}"
   sed --in-place --expression "s/${version_pattern}/${version_replacement}/" "${BASHLY_CONFIG}"
-  cue fmt "${BASHLY_CONFIG}"
 }
 
 main() {

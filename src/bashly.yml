@@ -1,0 +1,91 @@
+# yaml-language-server: $schema=https://github.com/bashly-framework/bashly/raw/refs/heads/master/schemas/bashly.json
+
+name: backup
+help: A very opinionated backup tool
+version: 0.2.10
+commands:
+  - name: init
+    help: Initialize a new repository
+    args:
+      - name: destination
+        help: Destination repository
+        required: true
+        allowed:
+          - external
+          - offsite
+    examples:
+      - backup init offsite
+  - name: run
+    help: Backup data to one or both repositories
+    args:
+      - name: destination
+        help: Destination repository
+        required: false
+        allowed:
+          - external
+          - offsite
+    examples:
+      - backup run
+      - backup run external
+      - backup run offsite
+  - name: check
+    help: Check one or both repositories for errors
+    flags:
+      - long: --file
+        short: -f
+        arg: file
+        help: Verify a file on your device matches the backup
+    args:
+      - name: destination
+        help: Destination repository
+        required: false
+        allowed:
+          - external
+          - offsite
+    examples:
+      - backup check
+      - backup check external
+      - backup check --file foo/bar.txt
+      - backup check offsite --file foo/bar.txt
+  - name: mount
+    help: Mount a backup repository
+    args:
+      - name: destination
+        help: Destination repository
+        required: true
+        allowed:
+          - external
+          - offsite
+  - name: unmount
+    help: Unmount a backup repository
+    args:
+      - name: destination
+        help: Destination repository
+        required: true
+        allowed:
+          - external
+          - offsite
+  - name: unlock
+    help: Remove a stale lock from a backup repository
+    args:
+      - name: destination
+        help: Destination repository
+        required: true
+        allowed:
+          - external
+          - offsite
+  - name: config
+    help: View or edit backup config
+    flags:
+      - long: --edit
+        short: -e
+        help: Open config in \$EDITOR
+      - long: --no-pager
+        short: -n
+        help: Don't use `bat` or `less`
+  - name: automagic
+    help: Configure automatic backup when external drive is plugged in
+    flags:
+      - long: --uninstall
+        short: -u
+        help: Remove automatic backup configuration

@@ -44,7 +44,6 @@ curl -SsfL https://philcrockett.com/yolo/v1.sh \
   | bash -s -- asdf tagref actionlint gitleaks && \
 asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
 asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
-asdf plugin add cue https://github.com/asdf-community/asdf-cue.git && \
 asdf plugin add pre-commit https://github.com/pcrockett/asdf-pre-commit.git
 
 FROM base AS devenv
@@ -71,8 +70,12 @@ COPY --from=tools "${ASDF_DIR}" "${ASDF_DIR}"
 WORKDIR /app
 COPY .tool-versions .pre-commit-config.yaml .
 RUN asdf install
-RUN git init . && pre-commit install --install-hooks
+RUN \
+git config --global init.defaultBranch main && \
+git init . && \
+pre-commit install --install-hooks
 
 COPY . .
+RUN git add .  # tell pre-commit what files to run against
 
 CMD [ "/usr/local/bin/minio", "server", "/data", "--console-address", ":9001" ]

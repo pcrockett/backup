@@ -14,7 +14,6 @@ tagref:
 
 format: backup
 	pre-commit run shfmt --all-files
-	cue fmt ./src/bashly.cue
 .PHONY: format
 
 test: backup minio-start
@@ -77,7 +76,3 @@ release:
 backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
 	bashly generate
 	sed --in-place 's|\[tag:|[ref:|g' backup
-
-src/bashly.yml: src/bashly.cue
-	cue fmt src/bashly.cue
-	cue export --out yaml src/bashly.cue > src/bashly.yml
