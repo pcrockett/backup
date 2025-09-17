@@ -54,8 +54,8 @@ setup_policy() {
 
 remove_bucket() {
   # removes the bucket if it exists, and does nothing otherwise
-  test ! -d "${MINIO_BUCKET_NAME}" ||
-    mc rb --force "${MINIO_INSTANCE_NAME}/${MINIO_BUCKET_NAME}"
+  test ! -d "${MINIO_BUCKET_NAME}" \
+    || mc rb --force "${MINIO_INSTANCE_NAME}/${MINIO_BUCKET_NAME}"
 }
 
 create_bucket() {

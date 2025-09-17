@@ -9,7 +9,10 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 indent_style = space
 indent_size = 2
-switch_case_indent = true # see <https://man.archlinux.org/man/extra/shfmt/shfmt.1.en>
+
+# shfmt options:
+switch_case_indent = true
+binary_next_line = true
 
 [Makefile]
 indent_style = tab
