@@ -15,7 +15,7 @@ tagref:
 .PHONY: tagref
 
 format: backup
-	shfmt --indent 2 --case-indent --write $(ALL_SCRIPTS)
+	shfmt --write $(ALL_SCRIPTS)
 	cue fmt ./src/bashly.cue
 .PHONY: format
 
