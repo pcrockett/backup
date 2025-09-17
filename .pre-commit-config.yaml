@@ -15,11 +15,11 @@ repos:
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.7
     hooks:
-      - id: actionlint
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.28.0
+      - id: actionlint-system
+  - repo: https://github.com/pcrockett/gitleaks
+    rev: 0cec2598f76713675989870f0c8343cb4d49614d
     hooks:
-      - id: gitleaks
+      - id: gitleaks-system
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.11.0
     hooks:

@@ -40,7 +40,8 @@ SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 # hadolint ignore=SC1091
 RUN \
 git config --global advice.detachedHead false && \
-curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- asdf tagref && \
+curl -SsfL https://philcrockett.com/yolo/v1.sh \
+  | bash -s -- asdf tagref actionlint gitleaks && \
 asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
 asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
 asdf plugin add cue https://github.com/asdf-community/asdf-cue.git && \
@@ -63,6 +64,8 @@ COPY --from=minio /usr/bin/mc /usr/local/bin
 COPY --from=restic /usr/local/bin/restic /usr/local/bin
 COPY --from=tools /usr/local/bin/asdf /usr/local/bin
 COPY --from=tools /usr/local/bin/tagref /usr/local/bin
+COPY --from=tools /usr/local/bin/actionlint /usr/local/bin
+COPY --from=tools /usr/local/bin/gitleaks /usr/local/bin
 COPY --from=tools "${ASDF_DIR}" "${ASDF_DIR}"
 
 WORKDIR /app
