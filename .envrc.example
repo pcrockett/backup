@@ -1,3 +1,6 @@
 # shellcheck shell=bash
 strict_env
 use asdf
+
+# especially useful during `make ci`
+export GITHUB_TOKEN="$(gh auth token)"
