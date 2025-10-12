@@ -66,6 +66,7 @@ COPY --from=tools /usr/local/bin/asdf /usr/local/bin
 COPY --from=tools /usr/local/bin/tagref /usr/local/bin
 COPY --from=tools /usr/local/bin/actionlint /usr/local/bin
 COPY --from=tools /usr/local/bin/gitleaks /usr/local/bin
+COPY --from=tools /usr/local/bin/yamlfmt /usr/local/bin
 COPY --from=tools "${ASDF_DIR}" "${ASDF_DIR}"
 
 WORKDIR /app
