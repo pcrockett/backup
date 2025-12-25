@@ -1,3 +1,30 @@
+## [0.3.0] - 2025-12-25
+
+### 🚀 Features
+
+* Forget and prune old snapshots
+
+### 🐛 Bug Fixes
+
+* *(ci)* Speed up gitleaks and actionlint steps
+* *(ci)* Use system shellcheck, not docker
+* *(ci)* Remove gitleaks
+
+### ⚙️ Miscellaneous Tasks
+
+* *(ci)* Add tagref checks
+* Simplify .editorconfig and shfmt config
+* *(ci)* Pre-commit
+* Better shfmt line wrapping
+* *(ci)* Eliminate cue, just use yaml
+* Set github token when working on project
+* *(ci)* Update pre-commit, yaml quality gates
+* *(ci)* Fix missing yamlfmt
+* *(ci)* Yamlfmt from asdf
+* *(ci)* Update to latest boilerplate
+* *(ci)* Update gh actions
+* *(ci)* Update github actions
+
 ## [0.2.10] - 2025-09-06
 
 ### ⚙️ Miscellaneous Tasks
