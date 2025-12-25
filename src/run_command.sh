@@ -15,6 +15,13 @@ configure_and_run() {
     --exclude-if-present ".nobackup" \
     --exclude-file "${exclude_file}" \
     "${BACKUP_PATHS[@]}"
+
+  restic forget \
+    --keep-daily 30 \
+    --keep-weekly 8 \
+    --keep-monthly 12 \
+    --keep-yearly 2 \
+    --prune
 }
 
 backup_external() {
