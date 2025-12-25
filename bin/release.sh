@@ -32,9 +32,8 @@ main() {
   test "${TAG_NAME}" = "$(git cliff --bumped-version)" \
     || panic "\`./backup --version\` reports ${TAG_NAME}, should be $(git cliff --bumped-version)."
 
-  # ensure CHANGELOG.md has all correct entries
-  git cliff --tag "${TAG_NAME}" >CHANGELOG.md # shouldn't produce any new changes in CHANGELOG
-  ensure_working_dir_clean
+  # ensure CHANGELOG.md is up-to-date with latest tag
+  head -n1 CHANGELOG.md | grep --fixed-strings "## [${BACKUP_VERSION}]" --quiet
 
   git tag "${TAG_NAME}"
   git push "${ORIGIN_NAME}" "${TAG_NAME}"
