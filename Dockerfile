@@ -31,7 +31,7 @@ SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 apt-get install --yes --no-install-recommends bzip2 && \
-curl -SsfL https://philcrockett.com/yolo/v1.sh | bash -s -- restic
+curl -SsfL https://philcrockett.com/yolo/v2.sh | bash -s -- restic
 
 
 FROM base AS tools
@@ -40,7 +40,7 @@ SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
 # hadolint ignore=SC1091
 RUN \
 git config --global advice.detachedHead false && \
-curl -SsfL https://philcrockett.com/yolo/v1.sh \
+curl -SsfL https://philcrockett.com/yolo/v2.sh \
   | bash -s -- asdf tagref actionlint && \
 asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
 asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
