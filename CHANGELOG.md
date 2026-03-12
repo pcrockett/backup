@@ -1,3 +1,9 @@
+## [0.4.0] - 2026-03-12
+
+### 🚀 Features
+
+* *(config)* Add to default exclude list (#78)
+
 ## [0.3.0] - 2025-12-25
 
 ### 🚀 Features
