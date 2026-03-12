@@ -13,7 +13,7 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/rhysd/actionlint
-    rev: e7d448ef7507c20fc4c88a95d0c448b848cd6127  # frozen: v1.7.8
+    rev: 393031adb9afb225ee52ae2ccd7a5af5525e03e8  # frozen: v1.7.11
     hooks:
       - id: actionlint-system
   - repo: https://github.com/scop/pre-commit-shfmt
@@ -21,7 +21,7 @@ repos:
     hooks:
       - id: shfmt
   - repo: https://github.com/adrienverge/yamllint
-    rev: 79a6b2b1392eaf49cdd32ac4f14be1a809bbd8f7  # frozen: v1.37.1
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
     hooks:
       - id: yamllint
   - repo: local
