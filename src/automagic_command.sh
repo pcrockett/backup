@@ -91,8 +91,8 @@ EOF
   umask u=rw,g=,o=
 
   mkdir --parent "${AUTOMAGIC_HOOKS_DIR}"
-  echo "${AFTER_HOOK_SCRIPT}" >"${AFTER_HOOK_SCRIPT_PATH}"
-  echo "${BEFORE_HOOK_SCRIPT}" >"${BEFORE_HOOK_SCRIPT_PATH}"
+  test -f "${AFTER_HOOK_SCRIPT_PATH}" || echo "${AFTER_HOOK_SCRIPT}" >"${AFTER_HOOK_SCRIPT_PATH}"
+  test -f "${BEFORE_HOOK_SCRIPT_PATH}" || echo "${BEFORE_HOOK_SCRIPT}" >"${BEFORE_HOOK_SCRIPT_PATH}"
   echo "${AUTOMAGIC_SCRIPT}" >"${AUTOMAGIC_SCRIPT_PATH}"
   log:info "Created ${AUTOMAGIC_SCRIPT_PATH}"
 )
