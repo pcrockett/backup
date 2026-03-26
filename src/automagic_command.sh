@@ -22,22 +22,22 @@ config:read
 AUTOMAGIC_SCRIPT="$(
   cat <<EOF
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
 
 BACKUP_SCRIPT=$(util:escape_value "${THIS_SCRIPT_PATH}")
 export HOME=/root  # Restic wants to know where HOME is for caching purposes
 
 run_and_check() {
-    "\${BACKUP_SCRIPT}" run
-    "\${BACKUP_SCRIPT}" check
+  "\${BACKUP_SCRIPT}" run
+  "\${BACKUP_SCRIPT}" check
 }
 
 "${BEFORE_HOOK_SCRIPT_PATH}" </dev/null
 
 if run_and_check; then
-    export AUTOMAGIC_BACKUP_RESULT=0
+  export AUTOMAGIC_BACKUP_RESULT=0
 else
-    export AUTOMAGIC_BACKUP_RESULT=\${?}
+  export AUTOMAGIC_BACKUP_RESULT=\${?}
 fi
 
 "${AFTER_HOOK_SCRIPT_PATH}" </dev/null || true
@@ -49,12 +49,12 @@ EOF
 AFTER_HOOK_SCRIPT="$(
   cat <<EOF
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
 
 # Script inputs:
 #
-# * AUTOMAGIC_BACKUP_RESULT environment variable indicating exit code of EITHER the \`run\` or
-#   \`check\` phase.
+# * AUTOMAGIC_BACKUP_RESULT environment variable indicating exit code of EITHER the
+#   \`run\` or \`check\` phase.
 #
 EOF
 )"
@@ -62,7 +62,7 @@ EOF
 BEFORE_HOOK_SCRIPT="$(
   cat <<EOF
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
 
 # TODO
 
