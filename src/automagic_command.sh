@@ -33,7 +33,7 @@ run_and_check() {
     "\${BACKUP_SCRIPT}" check
 }
 
-"${BEFORE_HOOK_SCRIPT_PATH}"
+"${BEFORE_HOOK_SCRIPT_PATH}" </dev/null
 
 if run_and_check; then
     export AUTOMAGIC_BACKUP_RESULT=0
@@ -41,7 +41,7 @@ else
     export AUTOMAGIC_BACKUP_RESULT=\${?}
 fi
 
-"${AFTER_HOOK_SCRIPT_PATH}" || true
+"${AFTER_HOOK_SCRIPT_PATH}" </dev/null || true
 
 exit \${AUTOMAGIC_BACKUP_RESULT}
 EOF
