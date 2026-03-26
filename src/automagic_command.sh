@@ -13,7 +13,6 @@ SYSTEMD_UNIT_PATH="/etc/systemd/system/${SYSTEMD_UNIT_NAME}.service"
 if [ "${args['--uninstall']:-}" != "" ]; then
   systemctl disable --now "${SYSTEMD_UNIT_NAME}.service"
   rm -f "${AUTOMAGIC_SCRIPT_PATH}" "${SYSTEMD_UNIT_PATH}"
-  rm -rf "${AUTOMAGIC_HOOKS_DIR}"
   systemctl daemon-reload
   exit 0
 fi
