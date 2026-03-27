@@ -1,3 +1,13 @@
+## [0.4.1] - 2026-03-27
+
+### 🐛 Bug Fixes
+
+* *(automagic)* Prevent hooks from taking stdin (#82)
+
+### ⚙️ Miscellaneous Tasks
+
+* *(ci)* Update to yolo script v2 (#81)
+
 ## [0.4.0] - 2026-03-12
 
 ### 🚀 Features
