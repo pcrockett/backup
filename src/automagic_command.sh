@@ -13,7 +13,6 @@ SYSTEMD_UNIT_PATH="/etc/systemd/system/${SYSTEMD_UNIT_NAME}.service"
 if [ "${args['--uninstall']:-}" != "" ]; then
   systemctl disable --now "${SYSTEMD_UNIT_NAME}.service"
   rm -f "${AUTOMAGIC_SCRIPT_PATH}" "${SYSTEMD_UNIT_PATH}"
-  rm -rf "${AUTOMAGIC_HOOKS_DIR}"
   systemctl daemon-reload
   exit 0
 fi
@@ -23,25 +22,25 @@ config:read
 AUTOMAGIC_SCRIPT="$(
   cat <<EOF
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
 
 BACKUP_SCRIPT=$(util:escape_value "${THIS_SCRIPT_PATH}")
 export HOME=/root  # Restic wants to know where HOME is for caching purposes
 
 run_and_check() {
-    "\${BACKUP_SCRIPT}" run
-    "\${BACKUP_SCRIPT}" check
+  "\${BACKUP_SCRIPT}" run
+  "\${BACKUP_SCRIPT}" check
 }
 
-"${BEFORE_HOOK_SCRIPT_PATH}"
+"${BEFORE_HOOK_SCRIPT_PATH}" </dev/null
 
 if run_and_check; then
-    export AUTOMAGIC_BACKUP_RESULT=0
+  export AUTOMAGIC_BACKUP_RESULT=0
 else
-    export AUTOMAGIC_BACKUP_RESULT=\${?}
+  export AUTOMAGIC_BACKUP_RESULT=\${?}
 fi
 
-"${AFTER_HOOK_SCRIPT_PATH}" || true
+"${AFTER_HOOK_SCRIPT_PATH}" </dev/null || true
 
 exit \${AUTOMAGIC_BACKUP_RESULT}
 EOF
@@ -50,12 +49,12 @@ EOF
 AFTER_HOOK_SCRIPT="$(
   cat <<EOF
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
 
 # Script inputs:
 #
-# * AUTOMAGIC_BACKUP_RESULT environment variable indicating exit code of EITHER the \`run\` or
-#   \`check\` phase.
+# * AUTOMAGIC_BACKUP_RESULT environment variable indicating exit code of EITHER the
+#   \`run\` or \`check\` phase.
 #
 EOF
 )"
@@ -63,7 +62,7 @@ EOF
 BEFORE_HOOK_SCRIPT="$(
   cat <<EOF
 #!/usr/bin/env bash
-set -Eeuo pipefail
+set -euo pipefail
 
 # TODO
 
@@ -92,8 +91,8 @@ EOF
   umask u=rw,g=,o=
 
   mkdir --parent "${AUTOMAGIC_HOOKS_DIR}"
-  echo "${AFTER_HOOK_SCRIPT}" >"${AFTER_HOOK_SCRIPT_PATH}"
-  echo "${BEFORE_HOOK_SCRIPT}" >"${BEFORE_HOOK_SCRIPT_PATH}"
+  test -f "${AFTER_HOOK_SCRIPT_PATH}" || echo "${AFTER_HOOK_SCRIPT}" >"${AFTER_HOOK_SCRIPT_PATH}"
+  test -f "${BEFORE_HOOK_SCRIPT_PATH}" || echo "${BEFORE_HOOK_SCRIPT}" >"${BEFORE_HOOK_SCRIPT_PATH}"
   echo "${AUTOMAGIC_SCRIPT}" >"${AUTOMAGIC_SCRIPT_PATH}"
   log:info "Created ${AUTOMAGIC_SCRIPT_PATH}"
 )
