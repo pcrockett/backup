@@ -1,5 +1,5 @@
 FROM docker.io/library/debian:trixie-slim AS base
-SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
+SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -27,7 +27,7 @@ FROM quay.io/minio/minio AS minio
 
 
 FROM base AS restic
-SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
+SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
 RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 apt-get install --yes --no-install-recommends bzip2 && \
@@ -35,7 +35,7 @@ curl -SsfL https://philcrockett.com/yolo/v2.sh | bash -s -- restic
 
 
 FROM base AS tools
-SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
+SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
 # don't care about "source" warning in shellcheck
 # hadolint ignore=SC1091
 RUN \
@@ -49,7 +49,7 @@ asdf plugin add pre-commit https://github.com/pcrockett/asdf-pre-commit.git && \
 asdf plugin add yamlfmt https://github.com/pcrockett/asdf-yamlfmt.git
 
 FROM base AS devenv
-SHELL [ "/bin/bash", "-Eeuo", "pipefail", "-c" ]
+SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
 
 # don't need to pin apt package versions
 # hadolint ignore=DL3008
