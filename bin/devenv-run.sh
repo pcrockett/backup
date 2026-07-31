@@ -20,7 +20,8 @@ docker run \
   --security-opt apparmor:unconfined \
   --name "${CONTAINER_NAME}" \
   ${DOCKER_ARGS:-} \
-  "${IMAGE_NAME}" "${@}"
+  "${IMAGE_NAME}" \
+  mise exec -- "${@}"
 
 if [ "${COPY_ARTIFACTS:-}" != "" ]; then
   docker cp "${CONTAINER_NAME}":/app/backup .

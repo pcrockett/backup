@@ -5,7 +5,7 @@
 If you want to get started editing the code, you have two options:
 
 1. Install all dev-time dependencies on your machine. _Check out
-   [.tool-versions](.tool-versions) and / or the [Dockerfile](Dockerfile) to discover
+   [mise.toml](mise.toml) and / or the [Dockerfile](Dockerfile) to discover
    what the build environment looks like._ Then you can use `make build`, `make test`,
    etc.
 2. Use Docker. `make ci` will build a Docker container and run the CI process inside,

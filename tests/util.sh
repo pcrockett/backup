@@ -9,7 +9,7 @@ setup() {
   mkdir -p "${TEST_BIN}" "${TEST_CWD}"
   cp backup "${TEST_BIN}"
   cp tests/init-test-bucket.sh "${TEST_BIN}"
-  cp .tool-versions "${TEST_CWD}"
+  cp mise.toml mise.lock "${TEST_CWD}"
 
   export MINIO_INSTANCE_URL="${MINIO_INSTANCE_URL:-http://localhost:9000}"
   export MINIO_TEST_ACCESS_KEY="${MINIO_TEST_ACCESS_KEY:-testaccesskey}"

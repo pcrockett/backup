@@ -1,0 +1,12 @@
+[tools]
+actionlint = "latest"
+bashly = "latest"
+bats = "latest"
+hadolint = "latest"
+pre-commit = "latest"
+restic = "latest"
+shellcheck = "latest"
+shfmt = "latest"
+"github:stepchowfun/tagref" = "latest"
+yamlfmt = "latest"
+yamllint = "latest"

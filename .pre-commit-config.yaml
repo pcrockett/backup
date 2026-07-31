@@ -12,29 +12,46 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
-  - repo: https://github.com/rhysd/actionlint
-    rev: 393031adb9afb225ee52ae2ccd7a5af5525e03e8  # frozen: v1.7.11
-    hooks:
-      - id: actionlint-system
-  - repo: https://github.com/scop/pre-commit-shfmt
-    rev: e26a818fd47b4f33cefa99035d1265b0849f4b47  # frozen: v3.13.0-1
-    hooks:
-      - id: shfmt
-  - repo: https://github.com/adrienverge/yamllint
-    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
-    hooks:
-      - id: yamllint
+
+  # local tools assumed to be installed with mise, see mise.toml
   - repo: local
     hooks:
+      - id: actionlint
+        name: lint github actions files
+        language: system
+        entry: actionlint
+        types:
+          - yaml
+        files: ^\.github/workflows/
       - id: shellcheck
-        name: shellcheck
+        name: lint shell scripts
         entry: shellcheck
         language: system
         types:
           - shell
+      - id: shfmt
+        name: autoformat shell scripts
+        entry: shfmt
+        args:
+          - --write
+        language: system
+        types:
+          - shell
+      - id: yamllint
+        name: lint yaml files
+        entry: yamllint
+        language: system
+        types:
+          - yaml
       - id: yamlfmt
-        name: yamlfmt
+        name: autoformat yaml files
         entry: yamlfmt
         language: system
         types:
           - yaml
+      - id: hadolint
+        name: lint dockerfiles
+        entry: hadolint
+        language: system
+        types:
+          - dockerfile

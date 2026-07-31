@@ -18,6 +18,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # TODO: acquire via mise
           curl -SsfL https://philcrockett.com/yolo/v2.sh \
               | bash -s -- git-cliff
       - name: upload release artifacts
