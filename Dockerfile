@@ -9,16 +9,17 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 rm -f /etc/apt/apt.conf.d/docker-clean && \
 apt-get update && \
-apt-get install --yes --no-install-recommends curl ca-certificates git python3 python3-venv extrepo && \
+apt-get install --yes --no-install-recommends curl ca-certificates git python3 python3-venv extrepo make build-essential procps fuse3 libyaml-dev ruby-dev libffi-dev && \
 extrepo enable mise && \
 apt-get update && \
-apt-get install --yes --no-install-recommends mise
+apt-get install --yes --no-install-recommends mise && \
+mkdir /app && \
+mkdir /data
 
 RUN \
 python3 -m venv /opt/pipx-venv && \
 /opt/pipx-venv/bin/pip install pipx && \
-ln -s /opt/pipx-venv/bin/pipx /usr/local/bin/pipx && \
-pipx ensurepath
+ln -s /opt/pipx-venv/bin/pipx /usr/local/bin/pipx
 
 # TODO: pin to specific image tag, but after we setup renovate
 # hadolint ignore=DL3007
@@ -31,31 +32,22 @@ FROM quay.io/minio/minio:latest AS minio
 FROM base AS devenv
 SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
 
-# don't need to pin apt package versions
-# hadolint ignore=DL3008
-RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
-    --mount=target=/var/cache/apt,type=cache,sharing=locked \
-mkdir /app && \
-mkdir /data && \
-apt-get install --yes --no-install-recommends \
-    make build-essential procps fuse3 libyaml-dev ruby-dev libffi-dev
-
 COPY --from=minio /usr/bin/minio /usr/local/bin
 COPY --from=minio /usr/bin/mc /usr/local/bin
 
 ENV PATH="/root/.local/bin:${PATH}"
 WORKDIR /app
 COPY mise.toml mise.lock ./
-RUN mise install --locked
+RUN mise install --locked && mise trust
 
 COPY .pre-commit-config.yaml .
 RUN \
 git config --global init.defaultBranch main && \
 git init . && \
-mise trust && \
 mise exec -- pre-commit install --install-hooks
 
 COPY . .
 RUN git add .  # tell pre-commit what files to run against
 
-CMD [ "/usr/local/bin/minio", "server", "/data", "--console-address", ":9001" ]
+ENTRYPOINT [ "mise", "exec", "--" ]
+CMD [ "minio", "server", "/data", "--console-address", ":9001" ]
