@@ -2,6 +2,7 @@
 actionlint = "latest"
 bashly = "latest"
 bats = "latest"
+git-cliff = "latest"
 hadolint = "latest"
 pre-commit = "latest"
 restic = "latest"
