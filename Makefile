@@ -27,7 +27,6 @@ ci: devenv
 
 devenv:
 	docker build \
-		--build-arg "GITHUB_TOKEN=${GITHUB_TOKEN}" \
 		--tag backup-ci .
 .PHONY: devenv
 
@@ -73,6 +72,6 @@ release:
 	gh workflow run release.yml
 .PHONY: release
 
-backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh .tool-versions
+backup: settings.yml src/bashly.yml src/*.sh src/lib/*.sh mise.lock
 	bashly generate
 	sed --in-place 's|\[tag:|[ref:|g' backup

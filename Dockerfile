@@ -3,80 +3,51 @@ SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# my yolo script and asdf plugin commands generate a lot of github http requests
-# this allows us to optionally authenticate those requests
-ARG GITHUB_TOKEN
-
-ENV ASDF_DIR=/root/.asdf \
-    PATH="/root/.asdf/shims:/root/.asdf/bin:${PATH}"
-
 # don't need to pin apt package versions
 # hadolint ignore=DL3008
 RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 rm -f /etc/apt/apt.conf.d/docker-clean && \
 apt-get update && \
-apt-get install --yes --no-install-recommends curl ca-certificates git python3
+apt-get install --yes --no-install-recommends curl ca-certificates git python3 python3-venv extrepo make build-essential procps fuse3 libyaml-dev ruby-dev libffi-dev && \
+extrepo enable mise && \
+apt-get update && \
+apt-get install --yes --no-install-recommends mise && \
+mkdir /app && \
+mkdir /data
 
+RUN \
+python3 -m venv /opt/pipx-venv && \
+/opt/pipx-venv/bin/pip install pipx && \
+ln -s /opt/pipx-venv/bin/pipx /usr/local/bin/pipx
 
-FROM quay.io/minio/minio AS minio
+# TODO: pin to specific image tag, but after we setup renovate
+# hadolint ignore=DL3007
+FROM quay.io/minio/minio:latest AS minio
 # we're just pulling a couple binaries out of this image. it looks like
 # the `dl.min.io` site where they recommend to download artifacts is fairly
 # unreliable, and as far as i can tell, very slow too. i imagine quay.io is
 # a better place from which to download.
 
-
-FROM base AS restic
-SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
-RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
-    --mount=target=/var/cache/apt,type=cache,sharing=locked \
-apt-get install --yes --no-install-recommends bzip2 && \
-curl -SsfL https://philcrockett.com/yolo/v2.sh | bash -s -- restic
-
-
-FROM base AS tools
-SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
-# don't care about "source" warning in shellcheck
-# hadolint ignore=SC1091
-RUN \
-git config --global advice.detachedHead false && \
-curl -SsfL https://philcrockett.com/yolo/v2.sh \
-  | bash -s -- asdf tagref actionlint && \
-asdf plugin add bashly https://github.com/pcrockett/asdf-bashly.git && \
-asdf plugin add bats https://github.com/pcrockett/asdf-bats.git && \
-asdf plugin add shellcheck https://github.com/pcrockett/asdf-shellcheck.git && \
-asdf plugin add pre-commit https://github.com/pcrockett/asdf-pre-commit.git && \
-asdf plugin add yamlfmt https://github.com/pcrockett/asdf-yamlfmt.git
-
 FROM base AS devenv
 SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
 
-# don't need to pin apt package versions
-# hadolint ignore=DL3008
-RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
-    --mount=target=/var/cache/apt,type=cache,sharing=locked \
-mkdir /app && \
-mkdir /data && \
-apt-get install --yes --no-install-recommends \
-    make build-essential procps fuse3 libyaml-dev ruby-dev libffi-dev
-
 COPY --from=minio /usr/bin/minio /usr/local/bin
 COPY --from=minio /usr/bin/mc /usr/local/bin
-COPY --from=restic /usr/local/bin/restic /usr/local/bin
-COPY --from=tools /usr/local/bin/asdf /usr/local/bin
-COPY --from=tools /usr/local/bin/tagref /usr/local/bin
-COPY --from=tools /usr/local/bin/actionlint /usr/local/bin
-COPY --from=tools "${ASDF_DIR}" "${ASDF_DIR}"
 
+ENV PATH="/root/.local/bin:${PATH}"
 WORKDIR /app
-COPY .tool-versions .pre-commit-config.yaml .
-RUN asdf install
+COPY mise.toml mise.lock ./
+RUN mise install --locked && mise trust
+
+COPY .pre-commit-config.yaml .
 RUN \
 git config --global init.defaultBranch main && \
 git init . && \
-pre-commit install --install-hooks
+mise exec -- pre-commit install --install-hooks
 
 COPY . .
 RUN git add .  # tell pre-commit what files to run against
 
-CMD [ "/usr/local/bin/minio", "server", "/data", "--console-address", ":9001" ]
+ENTRYPOINT [ "mise", "exec", "--" ]
+CMD [ "minio", "server", "/data", "--console-address", ":9001" ]
