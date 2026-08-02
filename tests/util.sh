@@ -74,6 +74,23 @@ capture_exit_code() {
   fi
 }
 
+assert_debug() {
+  # If your test has failed and you want to just see what the output of the command was
+  fail "
+*****EXIT_CODE*****
+${TEST_EXIT_CODE}
+*******************
+
+******STDOUT:******
+${TEST_STDOUT}
+*******************
+
+******STDERR:******
+${TEST_STDERR}
+*******************
+"
+}
+
 assert_exit_code() {
   test "${TEST_EXIT_CODE}" -eq "${1}" \
     || fail "Expected exit code ${1}; got ${TEST_EXIT_CODE}"

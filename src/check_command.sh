@@ -20,6 +20,14 @@ configure_and_run() {
   if [ "${path_to_check}" == "" ]; then
     if ! restic --verbose check --read-data-subset 100M; then
       check_failures+=("${dest} backup destination encountered an error.")
+    else
+      # `restic check` can exit with a success status code even if there are zero
+      # snapshots. That's a problem for me.
+      local snapshots_output
+      snapshots_output="$(restic snapshots --latest 1)"
+      if [ "${snapshots_output}" == "" ]; then
+        panic "No snapshots exist in backup!"
+      fi
     fi
   else
     hash:get_file_hash "${dest}" "${path_to_check}"

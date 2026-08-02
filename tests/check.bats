@@ -5,7 +5,7 @@ source tests/util.sh
 @test 'check - no snapshots yet - fails' {
   backup init offsite
   capture_output backup check offsite
-  assert_stderr 'Fatal: Cannot read from a repository having size 0'
+  assert_stderr '^FATAL: No snapshots exist in backup!$'
   assert_exit_code 1
 }
 
