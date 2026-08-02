@@ -1,3 +1,14 @@
+## [0.4.2] - 2026-08-02
+
+### 🐛 Bug Fixes
+
+* *(check)* Fail if there are no snapshots (#86)
+
+### ⚙️ Miscellaneous Tasks
+
+* *(ci)* Update some patterns and practices
+* *(ci)* Replace asdf with mise (#85)
+
 ## [0.4.1] - 2026-03-27
 
 ### 🐛 Bug Fixes
