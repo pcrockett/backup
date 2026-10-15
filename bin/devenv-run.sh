@@ -13,8 +13,6 @@ trap 'on_exit' EXIT
 
 # shellcheck disable=SC2086  # we want word splitting for DOCKER_ARGS
 docker run \
-  --env MINIO_ROOT_USER=adminuser \
-  --env MINIO_ROOT_PASSWORD=adminpassword \
   --device /dev/fuse \
   --cap-add SYS_ADMIN \
   --security-opt apparmor:unconfined \

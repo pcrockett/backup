@@ -11,17 +11,17 @@ setup() {
   cp tests/init-test-bucket.sh "${TEST_BIN}"
   cp mise.toml mise.lock "${TEST_CWD}"
 
-  export MINIO_INSTANCE_URL="${MINIO_INSTANCE_URL:-http://localhost:9000}"
-  export MINIO_TEST_ACCESS_KEY="${MINIO_TEST_ACCESS_KEY:-testaccesskey}"
-  export MINIO_TEST_SECRET_KEY="${MINIO_TEST_SECRET_KEY:-testsecretkey}"
-  export MINIO_BUCKET_NAME="${MINIO_BUCKET_NAME:-testbucket}"
+  export RUSTFS_INSTANCE_URL="${RUSTFS_INSTANCE_URL:-http://localhost:9000}"
+  export RUSTFS_ACCESS_KEY="${RUSTFS_ACCESS_KEY:-testaccesskey}"
+  export RUSTFS_SECRET_KEY="${RUSTFS_SECRET_KEY:-testsecretkey}"
+  export RUSTFS_BUCKET_NAME="${RUSTFS_BUCKET_NAME:-testbucket}"
 
   TEST_CONFIG_DIR="/etc/backup"
   mkdir --parent "${TEST_CONFIG_DIR}"
   cat >"${TEST_CONFIG_DIR}/config.sh" <<EOF
-AWS_ACCESS_KEY_ID="${MINIO_TEST_ACCESS_KEY}"
-AWS_SECRET_ACCESS_KEY="${MINIO_TEST_SECRET_KEY}"
-S3_REPOSITORY_URL="s3:${MINIO_INSTANCE_URL}/${MINIO_BUCKET_NAME}"
+AWS_ACCESS_KEY_ID="${RUSTFS_ACCESS_KEY}"
+AWS_SECRET_ACCESS_KEY="${RUSTFS_SECRET_KEY}"
+S3_REPOSITORY_URL="s3:${RUSTFS_INSTANCE_URL}/${RUSTFS_BUCKET_NAME}"
 RESTIC_E2EE_PASSWORD="testpassword"
 
 BACKUP_PATHS=(
