@@ -117,6 +117,45 @@ checksum = "sha256:3ae3a5549e85c7ad5b20192ebcfee4371269deca51255f6f2f2e051c6541f
 url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/orhun/git-cliff/releases/assets/405851866"
 
+[[tools."github:rustfs/cli"]]
+version = "0.1.36"
+backend = "github:rustfs/cli"
+
+[tools."github:rustfs/cli"."platforms.linux-arm64"]
+checksum = "sha256:20e09f70095ff2f83c92c68253cd44c1a86b15f4906e9630d396ec5b0e35148a"
+url = "https://github.com/rustfs/cli/releases/download/v0.1.36/rustfs-cli-linux-arm64-gnu-v0.1.36.tar.gz"
+url_api = "https://api.github.com/repos/rustfs/cli/releases/assets/567366155"
+
+[tools."github:rustfs/cli"."platforms.linux-arm64-musl"]
+checksum = "sha256:6e9dea7ac4f81562add9e1e31206ba6059d6f5929ad4ed924986223282b3aa9c"
+url = "https://github.com/rustfs/cli/releases/download/v0.1.36/rustfs-cli-linux-arm64-v0.1.36.tar.gz"
+url_api = "https://api.github.com/repos/rustfs/cli/releases/assets/567366145"
+
+[tools."github:rustfs/cli"."platforms.linux-x64"]
+checksum = "sha256:4f784f8e3715fbd27105e9b932998b54faf1149782ec80954a7b8e743bbeab3a"
+url = "https://github.com/rustfs/cli/releases/download/v0.1.36/rustfs-cli-linux-amd64-gnu-v0.1.36.tar.gz"
+url_api = "https://api.github.com/repos/rustfs/cli/releases/assets/567366150"
+
+[tools."github:rustfs/cli"."platforms.linux-x64-musl"]
+checksum = "sha256:4a8128911ccad4e7b481f26635a4cfd1ec064412210526e57ad2c748d356f3b7"
+url = "https://github.com/rustfs/cli/releases/download/v0.1.36/rustfs-cli-linux-amd64-v0.1.36.tar.gz"
+url_api = "https://api.github.com/repos/rustfs/cli/releases/assets/567366149"
+
+[tools."github:rustfs/cli"."platforms.macos-arm64"]
+checksum = "sha256:5739d4008a451fa8215512aa8aa26d6971a6c21e12f2c612fcae88353a3aeefc"
+url = "https://github.com/rustfs/cli/releases/download/v0.1.36/rustfs-cli-macos-arm64-v0.1.36.tar.gz"
+url_api = "https://api.github.com/repos/rustfs/cli/releases/assets/567366146"
+
+[tools."github:rustfs/cli"."platforms.macos-x64"]
+checksum = "sha256:839d58147104fdc0922ede604d5f99a58432f7bf33d0afd30d50e79ce617d8c8"
+url = "https://github.com/rustfs/cli/releases/download/v0.1.36/rustfs-cli-macos-amd64-v0.1.36.tar.gz"
+url_api = "https://api.github.com/repos/rustfs/cli/releases/assets/567366151"
+
+[tools."github:rustfs/cli"."platforms.windows-x64"]
+checksum = "sha256:19169693932796928d2890c2e6f13e8412e16b052a3dbe9480ed72f80e9b212c"
+url = "https://github.com/rustfs/cli/releases/download/v0.1.36/rustfs-cli-windows-amd64-v0.1.36.zip"
+url_api = "https://api.github.com/repos/rustfs/cli/releases/assets/567366159"
+
 [[tools."github:stepchowfun/tagref"]]
 version = "1.13.0"
 backend = "github:stepchowfun/tagref"
@@ -267,6 +306,40 @@ url_api = "https://api.github.com/repos/restic/restic/releases/assets/467000400"
 checksum = "sha256:da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d"
 url = "https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_windows_amd64.zip"
 url_api = "https://api.github.com/repos/restic/restic/releases/assets/466998668"
+
+[[tools.rustfs]]
+version = "1.0.1"
+backend = "github:rustfs/rustfs"
+
+[tools.rustfs."platforms.linux-arm64"]
+checksum = "sha256:1dcfb6ae59702b8e90394157e57450ed219515a1cc63525f730d4e120e9be7b9"
+url = "https://github.com/rustfs/rustfs/releases/download/1.0.1/rustfs-linux-aarch64-gnu-v1.0.1.zip"
+url_api = "https://api.github.com/repos/rustfs/rustfs/releases/assets/607172152"
+
+[tools.rustfs."platforms.linux-arm64-musl"]
+checksum = "sha256:d2533e293204597416cb8d30790ea35df14cb4521633fa3574c64333141bafdf"
+url = "https://github.com/rustfs/rustfs/releases/download/1.0.1/rustfs-linux-aarch64-musl-v1.0.1.zip"
+url_api = "https://api.github.com/repos/rustfs/rustfs/releases/assets/607172299"
+
+[tools.rustfs."platforms.linux-x64"]
+checksum = "sha256:9742e183cb0dfb0d48fa909797af572fe47b7f827569036baa4156e0d3958ee5"
+url = "https://github.com/rustfs/rustfs/releases/download/1.0.1/rustfs-linux-x86_64-gnu-v1.0.1.zip"
+url_api = "https://api.github.com/repos/rustfs/rustfs/releases/assets/607172574"
+
+[tools.rustfs."platforms.linux-x64-musl"]
+checksum = "sha256:a834096dafa1f1a55825a2cdaf49d006a193978d344f2d508c2be475133738a3"
+url = "https://github.com/rustfs/rustfs/releases/download/1.0.1/rustfs-linux-x86_64-musl-v1.0.1.zip"
+url_api = "https://api.github.com/repos/rustfs/rustfs/releases/assets/607172804"
+
+[tools.rustfs."platforms.macos-arm64"]
+checksum = "sha256:18aac7101c3484b98f93de64a0609aaa8e02aba072ba7927172c4b2eae7d4843"
+url = "https://github.com/rustfs/rustfs/releases/download/1.0.1/rustfs-macos-aarch64-v1.0.1.zip"
+url_api = "https://api.github.com/repos/rustfs/rustfs/releases/assets/607172938"
+
+[tools.rustfs."platforms.windows-x64"]
+checksum = "sha256:624259622524255d0000131e095f37a11299fd76926aabfd8f831a9dbe6a39f7"
+url = "https://github.com/rustfs/rustfs/releases/download/1.0.1/rustfs-windows-x86_64-v1.0.1.zip"
+url_api = "https://api.github.com/repos/rustfs/rustfs/releases/assets/607173065"
 
 [[tools.shellcheck]]
 version = "0.11.0"

@@ -2,6 +2,8 @@
 set -Eeuo pipefail
 
 MINIO_DATA_DIR="${MINIO_DATA_DIR:-/data}"
+MINIO_TEST_ACCESS_KEY="${MINIO_TEST_ACCESS_KEY:-testaccesskey}"
+MINIO_TEST_SECRET_KEY="${MINIO_TEST_SECRET_KEY:-testsecretkey}"
 STATE_DIR="${XDG_STATE_HOME:-"${HOME}/.local/state"}/backup"
 PID_FILE="${STATE_DIR}/minio-pid"
 LOG_FILE="${STATE_DIR}/minio-logs.txt"
@@ -11,7 +13,11 @@ if [ -f "${PID_FILE}" ]; then
   # service is already running; run minio-stop.sh to kill it
   exit 0
 fi
-minio server "${MINIO_DATA_DIR}" &>"${LOG_FILE}" &
+
+export RUSTFS_ACCESS_KEY="${MINIO_TEST_ACCESS_KEY}"
+export RUSTFS_SECRET_KEY="${MINIO_TEST_SECRET_KEY}"
+rustfs server "${MINIO_DATA_DIR}" &>"${LOG_FILE}" &
+
 echo "${!}" >"${PID_FILE}"
 echo "Minio logs are being stored in ${LOG_FILE}"
 
