@@ -16,7 +16,7 @@ format: backup
 	pre-commit run shfmt --all-files
 .PHONY: format
 
-test: backup minio-start
+test: backup rustfs-start
 	bats --verbose-run --print-output-on-failure ./tests
 .PHONY: test
 
@@ -52,13 +52,13 @@ install: backup
 	sudo install backup /usr/local/bin/
 .PHONY: install
 
-minio-start:
-	./tests/minio-start.sh
-.PHONY: minio-start
+rustfs-start:
+	./tests/rustfs-start.sh
+.PHONY: rustfs-start
 
-minio-stop:
-	./tests/minio-stop.sh
-.PHONY: minio-stop
+rustfs-stop:
+	./tests/rustfs-stop.sh
+.PHONY: rustfs-stop
 
 prepare-release:
 	./bin/prepare-release.sh

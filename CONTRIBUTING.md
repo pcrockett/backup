@@ -29,7 +29,7 @@ If you did your Conventional Commits correctly,
 
 ## Testing
 
-Generally we only do automated testing for the "offsite" use case. This is because it requires no
-root privileges or physical devices. All it requires is running an ephemeral S3-compatible service
-in the background during tests. For this, we use [MinIO](https://github.com/minio/minio) in a
-Docker container.
+Generally we only do automated testing for the "offsite" use case. This is because
+it requires no root privileges or physical devices. All it requires is running an
+ephemeral S3-compatible service in the background during tests. For this, we use
+[RustFS](https://github.com/rustfs/rustfs) in a Docker container.
