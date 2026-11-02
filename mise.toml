@@ -1,8 +1,8 @@
 [tools]
+"github:pcrockett/bashly-dist" = "1.4.0"
 "github:rustfs/cli" = "latest"
 "github:stepchowfun/tagref" = "latest"
 actionlint = "latest"
-bashly = "latest"
 bats = "latest"
 git-cliff = "latest"
 hadolint = "latest"

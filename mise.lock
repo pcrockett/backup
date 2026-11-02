@@ -13,11 +13,6 @@ url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_
 url_api = "https://api.github.com/repos/rhysd/actionlint/releases/assets/384924896"
 provenance = "github-attestations"
 
-[[tools.bashly]]
-version = "1.4.0"
-backend = "gem:bashly"
-specifiers = ["latest"]
-
 [[tools.bats]]
 version = "1.13.0"
 backend = "aqua:bats-core/bats-core"
@@ -37,6 +32,17 @@ specifiers = ["latest"]
 checksum = "sha256:200d2535da6d9703f3bcc8a4d159c3b55eacdb01cf2148c55b3eee9dd04d5249"
 url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-musl.tar.gz"
 url_api = "https://api.github.com/repos/orhun/git-cliff/releases/assets/405850671"
+
+[[tools."github:pcrockett/bashly-dist"]]
+version = "1.4.0"
+backend = "github:pcrockett/bashly-dist"
+specifiers = ["1.4.0"]
+
+[tools."github:pcrockett/bashly-dist"."platforms.linux-x64"]
+checksum = "sha256:7e48ac27468d35e4778f11678752f41980b5f4feaa9b7d17978bb3cf1ca8658a"
+url = "https://github.com/pcrockett/bashly-dist/releases/download/v1.4.0/bashly-1.4.0-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/pcrockett/bashly-dist/releases/assets/701027755"
+provenance = "github-attestations"
 
 [[tools."github:rustfs/cli"]]
 version = "0.1.36"
