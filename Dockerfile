@@ -9,17 +9,12 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 rm -f /etc/apt/apt.conf.d/docker-clean && \
 apt-get update && \
-apt-get install --yes --no-install-recommends curl ca-certificates git python3 python3-venv extrepo make build-essential procps fuse3 libyaml-dev ruby-dev libffi-dev jq && \
+apt-get install --yes --no-install-recommends curl ca-certificates git extrepo make build-essential procps fuse3 libyaml-dev libffi-dev jq && \
 extrepo enable mise && \
 apt-get update && \
 apt-get install --yes --no-install-recommends mise && \
 mkdir /app && \
 mkdir /data
-
-RUN \
-python3 -m venv /opt/pipx-venv && \
-/opt/pipx-venv/bin/pip install pipx && \
-ln -s /opt/pipx-venv/bin/pipx /usr/local/bin/pipx
 
 FROM base AS devenv
 SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
@@ -27,7 +22,8 @@ SHELL [ "/bin/bash", "-euo", "pipefail", "-c" ]
 ENV PATH="/root/.local/bin:${PATH}"
 WORKDIR /app
 COPY mise.toml mise.lock ./
-RUN mise install --locked && mise trust
+COPY .mise ./.mise
+RUN mise trust && mise install --locked
 
 COPY .pre-commit-config.yaml .
 RUN \

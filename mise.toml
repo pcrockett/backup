@@ -6,10 +6,16 @@ bashly = "latest"
 bats = "latest"
 git-cliff = "latest"
 hadolint = "latest"
+python = "3.14"  # just for yamllint
 pre-commit = "latest"
 restic = "latest"
+ruby = "latest"
 rustfs = "latest"
 shellcheck = "latest"
 shfmt = "latest"
+uv = "latest"  # just for yamllint
 yamlfmt = "latest"
 yamllint = "latest"
+
+[settings]
+lockfile_platforms = ["linux-x64"]
