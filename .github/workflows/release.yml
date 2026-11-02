@@ -14,6 +14,15 @@ jobs:
         with:
           fetch-depth: 0  # get everything
           fetch-tags: true
+      - name: Allow fuse mounts inside the devenv container
+        run: |
+          # Ubuntu 26.04 runners confine fusermount3 with an AppArmor profile
+          # that also applies inside containers, blocking the restic mounts the
+          # tests perform (moby/moby#50013).
+          if [ -f /etc/apparmor.d/fusermount3 ]; then
+            printf 'mount fstype=fuse*,\numount,\n' | sudo tee /etc/apparmor.d/local/fusermount3
+            sudo apparmor_parser --replace /etc/apparmor.d/fusermount3
+          fi
       - uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195  # v5.2.5
       - name: upload release artifacts
         run: bin/release.sh
