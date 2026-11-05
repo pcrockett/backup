@@ -34,14 +34,14 @@ url = "https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.
 url_api = "https://api.github.com/repos/orhun/git-cliff/releases/assets/405850671"
 
 [[tools."github:pcrockett/bashly-dist"]]
-version = "1.4.0"
+version = "2.0.0"
 backend = "github:pcrockett/bashly-dist"
-specifiers = ["1.4.0"]
+specifiers = ["2.0.0"]
 
 [tools."github:pcrockett/bashly-dist"."platforms.linux-x64"]
-checksum = "sha256:7e48ac27468d35e4778f11678752f41980b5f4feaa9b7d17978bb3cf1ca8658a"
-url = "https://github.com/pcrockett/bashly-dist/releases/download/v1.4.0/bashly-1.4.0-linux-x64.tar.gz"
-url_api = "https://api.github.com/repos/pcrockett/bashly-dist/releases/assets/701027755"
+checksum = "sha256:6ce9c7d4e6e6d9eeb3e8664ae1f9af0eeca849f35cecd703a3627159b5b8c00f"
+url = "https://github.com/pcrockett/bashly-dist/releases/download/v2.0.0/bashly-2.0.0-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/pcrockett/bashly-dist/releases/assets/701040707"
 provenance = "github-attestations"
 
 [[tools."github:rustfs/cli"]]
@@ -107,7 +107,7 @@ url_api = "https://api.github.com/repos/restic/restic/releases/assets/466999719"
 [[tools.ruby]]
 version = "4.0.9"
 backend = "core:ruby"
-specifiers = ["latest"]
+specifiers = ["4.0"]
 
 [tools.ruby.options]
 compile = "false"

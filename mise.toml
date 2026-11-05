@@ -1,5 +1,5 @@
 [tools]
-"github:pcrockett/bashly-dist" = "1.4.0"
+"github:pcrockett/bashly-dist" = "2.0.0"
 "github:rustfs/cli" = "latest"
 "github:stepchowfun/tagref" = "latest"
 actionlint = "latest"
@@ -9,7 +9,7 @@ hadolint = "latest"
 python = "3.14"  # just for yamllint
 pre-commit = "latest"
 restic = "latest"
-ruby = "latest"
+ruby = "4.0"  # specific major.minor required for bashly
 rustfs = "latest"
 shellcheck = "latest"
 shfmt = "latest"
