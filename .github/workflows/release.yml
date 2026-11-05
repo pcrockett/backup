@@ -14,6 +14,7 @@ jobs:
         with:
           fetch-depth: 0  # get everything
           fetch-tags: true
+          persist-credentials: false
       - name: Allow fuse mounts inside the devenv container
         run: |
           # Ubuntu 26.04 runners confine fusermount3 with an AppArmor profile

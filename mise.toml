@@ -16,6 +16,7 @@ shfmt = "latest"
 uv = "latest"  # just for yamllint
 yamlfmt = "latest"
 yamllint = "latest"
+zizmor = "latest"
 
 [settings]
 lockfile_platforms = ["linux-x64"]

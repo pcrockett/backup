@@ -176,3 +176,14 @@ version = "1.38.0"
 backend = "pypi:yamllint"
 specifiers = ["latest"]
 uv = { path = ".mise/locks/yamllint/1.38.0", digest = "sha256:8e55c33af57f55d452849f1dc5de6f6848d4b8c072a9158c5a93a865e0b7afd9" }
+
+[[tools.zizmor]]
+version = "1.31.1"
+backend = "aqua:zizmorcore/zizmor"
+specifiers = ["latest"]
+
+[tools.zizmor."platforms.linux-x64"]
+checksum = "sha256:d185f726bdaf92df78273217dfdd24ebcd6b0ef48cf3ce776ff5762b6e138c99"
+url = "https://github.com/zizmorcore/zizmor/releases/download/v1.31.1/zizmor-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/zizmorcore/zizmor/releases/assets/645467284"
+provenance = "github-attestations"

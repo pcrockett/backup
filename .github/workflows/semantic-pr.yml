@@ -1,7 +1,8 @@
 name: Semantic PR
 
 on:
-  pull_request_target:
+  pull_request:
+    branches: ["**"]
     types:
       - opened
       - edited
