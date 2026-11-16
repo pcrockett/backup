@@ -24,7 +24,7 @@ jobs:
             printf 'mount fstype=fuse*,\numount,\n' | sudo tee /etc/apparmor.d/local/fusermount3
             sudo apparmor_parser --replace /etc/apparmor.d/fusermount3
           fi
-      - uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195  # v5.2.5
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b  # v5.2.7
       - name: upload release artifacts
         run: bin/release.sh
         env:
